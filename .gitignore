@@ -1,5 +1,6 @@
 # IDEs
 .vs/
+*.csproj.user
 launchSettings.json
 
 # Artifacts

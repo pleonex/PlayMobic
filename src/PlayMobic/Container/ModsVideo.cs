@@ -3,7 +3,7 @@ namespace PlayMobic.Container;
 using System.Collections.ObjectModel;
 using Yarhl.FileFormat;
 
-public class ModsVideo : IFormat
+public sealed class ModsVideo : IFormat, IDisposable
 {
     public ModsVideo(Stream data)
     {
@@ -19,4 +19,10 @@ public class ModsVideo : IFormat
     public Collection<KeyFrameInfo> KeyFramesInfo { get; init; }
 
     public Stream Data { get; init; }
+
+    public void Dispose()
+    {
+        Data?.Dispose();
+        GC.SuppressFinalize(this);
+    }
 }
