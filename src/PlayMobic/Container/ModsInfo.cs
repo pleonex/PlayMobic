@@ -2,11 +2,13 @@ namespace PlayMobic.Container;
 
 public class ModsInfo
 {
-    public ushort TagId { get; set; }
+    public string VideoCodecId { get; set; } = string.Empty;
 
-    public int TagIdSize { get; set; }
+    public int Unknown06 { get; set; }
 
     public int FramesCount { get; set; }
+
+    public TimeSpan Duration => TimeSpan.FromSeconds(FramesCount / (double)FramesPerSecond);
 
     public int Width { get; set; }
 
@@ -14,7 +16,7 @@ public class ModsInfo
 
     public int FramesPerSecond { get; set; }
 
-    public int AudioCodecKind { get; set; }
+    public AudioCodecKind AudioCodec { get; set; }
 
     public int AudioChannelsCount { get; set; }
 

@@ -11,6 +11,20 @@ The MODS format is a container with a video and audio streams.
 
 The integers are encoded in little endian.
 
+File structure:
+
+- [Header](#mods-header)
+- Frame packets
+- [Key frame info table](#key-frames-table)
+  - Because it's at the end of the file, it prevents to support jumping in time
+    when _download streaming_. You need to get the full file in order to be able
+    to know where are they key frames. You can start streaming from start
+    without jump support.
+
+The location of the audio codec info (codebook) is not yet clarified.
+
+### MODS header
+
 | Offset | Type    | Description                                     |
 | ------ | ------- | ----------------------------------------------- |
 | 0x00   | char[4] | Format identifier: `MODS`                       |
@@ -28,3 +42,14 @@ The integers are encoded in little endian.
 | 0x24   | uint    | Offset to the audio codec info section          |
 | 0x28   | uint    | Offset to the key frames table                  |
 | 0x2C   | uint    | Number of key frames                            |
+
+### Key frames table
+
+This is a collection of 8-byte entries, one for each _key frame_. This allows to
+jump in time in the video by finding the nearest complete frame to start
+processing.
+
+| Offset | Type | Description         |
+| ------ | ---- | ------------------- |
+| 0x00   | uint | Frame number        |
+| 0x04   | uint | Frame packet offset |
