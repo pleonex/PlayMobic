@@ -1,3 +1,5 @@
 ﻿namespace PlayMobic.Container;
 
-public record StreamPacket(int StreamIndex, Stream Data);
+using Yarhl.IO;
+
+public record StreamPacket(int StreamIndex, DataStream Data);

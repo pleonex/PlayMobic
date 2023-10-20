@@ -80,7 +80,7 @@ public sealed class PacketReader : IEnumerator<FramePacket>
         bool isKeyFrame = container.KeyFramesInfo.Any(i => i.FrameNumber == currentFrame);
 
         // We can get the video packet data from the number of audio blocks.
-        int audioDataSize = GetAudioDataSize(isKeyFrame, audioBlocksCount);
+        int audioDataSize = GetAudioDataSize(isKeyFrame, audioBlocksCount) * container.Info.AudioChannelsCount;
         int videoDataSize = (int)(packetSize - audioDataSize);
 
         long packetStart = containerData.Position;
@@ -107,7 +107,7 @@ public sealed class PacketReader : IEnumerator<FramePacket>
 
     private int GetAudioDataSize(bool isKeyFrame, int blocks)
     {
-        int completeAudioBlocks = isKeyFrame ? container.Info.AudioChannelsCount : 0;
+        int completeAudioBlocks = isKeyFrame ? 1 : 0;
         int regularAudioBlocks = blocks - completeAudioBlocks;
 
         int audioDataSize = (completeAudioBlocks * CompleteAudioBlockSize)
@@ -127,10 +127,12 @@ public sealed class PacketReader : IEnumerator<FramePacket>
         // It could be that there aren't enough blocks for every channel.
         for (int i = 0; i < audioBlocksCount; i++) {
             // If the frame is key, then the first block of each channel has an additional 4 bytes.
-            int dataSize = (isKeyFrame && (i < channels)) ? CompleteAudioBlockSize : AudioBlockSize;
+            int dataSize = (isKeyFrame && i == 0) ? CompleteAudioBlockSize : AudioBlockSize;
 
-            containerData.WriteSegmentTo(containerData.Position, dataSize, audioChannelsData[i % channels]);
-            containerData.Position += dataSize;
+            for (int c = 0; c < channels; c++) {
+                containerData.WriteSegmentTo(containerData.Position, dataSize, audioChannelsData[c]);
+                containerData.Position += dataSize;
+            }
         }
 
         return audioChannelsData;
