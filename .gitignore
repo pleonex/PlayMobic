@@ -1,6 +1,10 @@
 # IDEs
 .vs/
+launchSettings.json
 
 # Artifacts
 bin/
 obj/
+
+# Test resources
+resources/
