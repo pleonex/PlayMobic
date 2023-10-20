@@ -1,10 +1,13 @@
 ﻿using System.CommandLine;
+using NAudio.Wave;
+using PlayMobic.Audio;
 using PlayMobic.Container;
 using Yarhl.FileSystem;
 using Yarhl.IO;
 
 return await new RootCommand("Tool for MODS videos") {
     SetupInfoCommand(),
+    SetupExtractAudioCommand(),
 }.InvokeAsync(args);
 
 Command SetupInfoCommand()
@@ -18,11 +21,24 @@ Command SetupInfoCommand()
     return infoCommand;
 }
 
+Command SetupExtractAudioCommand()
+{
+    var inputArg = new Option<FileInfo>("--input", "Path to the .mods file") { IsRequired = true };
+    var outputArg = new Option<string>("--output", "Path to the output .wav file") { IsRequired = true };
+    var command = new Command("extract-audio", "Extract the first audio track") {
+        inputArg,
+        outputArg,
+    };
+    command.SetHandler(ExtractAudio, inputArg, outputArg);
+
+    return command;
+}
+
 void PrintInfo(FileInfo videoFile)
 {
     Console.WriteLine("Video: {0}", videoFile.FullName);
 
-    Node videoNode = NodeFactory.FromFile(videoFile.FullName, FileOpenMode.Read)
+    using Node videoNode = NodeFactory.FromFile(videoFile.FullName, FileOpenMode.Read)
         .TransformWith<Binary2Mods>();
 
     ModsVideo video = videoNode.GetFormatAs<ModsVideo>()!;
@@ -36,4 +52,49 @@ void PrintInfo(FileInfo videoFile)
     Console.WriteLine("  Audio codec: {0}", info.AudioCodec);
     Console.WriteLine("  Audio channels: {0}", info.AudioChannelsCount);
     Console.WriteLine("  Audio frequency: {0} Hz", info.AudioFrequency);
+}
+
+void ExtractAudio(FileInfo videoFile, string outputPath)
+{
+    Console.WriteLine("Video: {0}", videoFile.FullName);
+    Console.WriteLine("Output: {0}", outputPath);
+
+    using Node videoNode = NodeFactory.FromFile(videoFile.FullName, FileOpenMode.Read)
+        .TransformWith<Binary2Mods>();
+
+    ModsVideo video = videoNode.GetFormatAs<ModsVideo>()!;
+    ModsInfo info = video.Info;
+
+    var audioStream1 = new DataStream();
+    var audioDecoder1 = new ImaAdpcmDecoder();
+
+    var audioStream2 = new DataStream();
+    var audioDecoder2 = new ImaAdpcmDecoder();
+
+    var demuxer = new ModsDemuxer(video);
+    foreach (FramePacket framePacket in demuxer.ReadFrames()) {
+        Console.Write('.');
+
+        Stream stream1 = framePacket.StreamPackets.Where(p => p.StreamIndex == 1).First().Data;
+        byte[] output = audioDecoder1.Decode(stream1, framePacket.IsKeyFrame);
+        audioStream1.Write(output);
+
+        Stream stream2 = framePacket.StreamPackets.Where(p => p.StreamIndex == 2).First().Data;
+        output = audioDecoder2.Decode(stream2, framePacket.IsKeyFrame);
+        audioStream2.Write(output);
+    }
+
+    Console.WriteLine("Decoded - Saving");
+
+    audioStream1.Position = 0;
+    audioStream2.Position = 0;
+    var waveFormat = new WaveFormat(info.AudioFrequency, 16, 1);
+    var waveAudio1 = new RawSourceWaveStream(audioStream1, waveFormat);
+    var waveAudio2 = new RawSourceWaveStream(audioStream2, waveFormat);
+
+    var mix = new MultiplexingWaveProvider(new[] { waveAudio1, waveAudio2 });
+    WaveFileWriter.CreateWaveFile(outputPath, waveAudio1);
+
+    Console.WriteLine();
+    Console.WriteLine("Done");
 }
