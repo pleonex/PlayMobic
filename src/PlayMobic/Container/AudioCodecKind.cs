@@ -2,7 +2,7 @@
 
 public enum AudioCodecKind
 {
-    Unknown,
+    None,
     Sx = 1,
     FastAudio = 2,
     ImaAdpcm = 3,

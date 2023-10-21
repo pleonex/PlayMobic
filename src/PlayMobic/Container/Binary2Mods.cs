@@ -1,4 +1,4 @@
-namespace PlayMobic.Container;
+﻿namespace PlayMobic.Container;
 
 using System;
 using System.Collections.ObjectModel;
@@ -48,8 +48,7 @@ public class Binary2Mods : IConverter<IBinary, ModsVideo>
         header.Info.FramesCount = reader.ReadInt32();
         header.Info.Width = reader.ReadInt32();
         header.Info.Height = reader.ReadInt32();
-        _ = reader.ReadInt24(); // unknown - scale?
-        header.Info.FramesPerSecond = reader.ReadByte();
+        header.Info.FramesPerSecond = reader.ReadUInt32() / (double)ModsInfo.FramesPerSecondBase;
         header.Info.AudioCodec = (AudioCodecKind)reader.ReadUInt16();
         header.Info.AudioChannelsCount = reader.ReadUInt16();
         header.Info.AudioFrequency = reader.ReadInt32();

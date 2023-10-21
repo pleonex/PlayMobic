@@ -33,8 +33,7 @@ The location of the audio codec info (codebook) is not yet clarified.
 | 0x08   | int     | Frames count                                    |
 | 0x0C   | int     | Video width resolution                          |
 | 0x10   | int     | Video height resolution                         |
-| 0x14   | byte[3] | Unknown - fps scale or single big endian value? |
-| 0x17   | byte    | Frames per second                               |
+| 0x14   | uint    | Frames per second * 0x01000000                  |
 | 0x18   | ushort  | Audio codec ID                                  |
 | 0x1A   | ushort  | Audio channels count                            |
 | 0x1C   | uint    | Audio frequency in hertz                        |
@@ -50,6 +49,7 @@ The container kind can be:
 
 The audio codec ID can be:
 
+- 0: No audio
 - 1: FastAudio
 - 2: Sx
 - 3: IMA-ADPCM: 4-bits samples with a header of 32-bits (index + last sample)
