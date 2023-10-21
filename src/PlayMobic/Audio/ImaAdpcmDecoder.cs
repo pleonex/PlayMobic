@@ -17,7 +17,7 @@ public class ImaAdpcmDecoder
         -1, -1, -1, -1, 2, 4, 6, 8,
     };
 
-    private static readonly int[] StepsizeTable = new int[89] {
+    private static readonly short[] StepsizeTable = new short[89] {
         7, 8, 9, 10, 11, 12, 13, 14,
         16, 17, 19, 21, 23, 25, 28,
         31, 34, 37, 41, 45, 50, 55,
@@ -57,14 +57,14 @@ public class ImaAdpcmDecoder
             index = StepsizeTable.Length - 1;
         }
 
-        int stepsize = StepsizeTable[index];
+        short stepsize = StepsizeTable[index];
 
         int difference;
         int newSample = lastSample;
 
         byte bitsBuffer = 0;
         int bitsRead = 0;
-        while (data.Position != data.Length) {
+        while (data.Position != data.Length || bitsRead > 0) {
             if (bitsRead == 0) {
                 bitsBuffer = reader.ReadByte();
                 bitsRead = 8;
@@ -94,10 +94,10 @@ public class ImaAdpcmDecoder
 
             newSample += difference;
 
-            if (newSample > 32767) {
-                newSample = 32767;
-            } else if (newSample < -32768) {
-                newSample = -32768;
+            if (newSample > short.MaxValue) {
+                newSample = short.MaxValue;
+            } else if (newSample < short.MinValue) {
+                newSample = short.MinValue;
             }
 
             writer.Write((short)newSample);
@@ -105,8 +105,8 @@ public class ImaAdpcmDecoder
             index += IndexTable[value];
             if (index < 0) {
                 index = 0;
-            } else if (index > 88) {
-                index = 88;
+            } else if (index >= StepsizeTable.Length) {
+                index = StepsizeTable.Length - 1;
             }
 
             stepsize = StepsizeTable[index];

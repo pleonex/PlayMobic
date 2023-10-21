@@ -7,6 +7,9 @@ of the SDK: `Actimagine:Mobiclip SDK Vx.x.x` (e.g. 1.2.1). The video files have
 
 The MODS format is a container with a video and audio streams.
 
+This format supports _random frame access_ but it requires the full file to be
+available to get the bottom _key frame info table_.
+
 ## MODS container
 
 The integers are encoded in little endian.
@@ -17,10 +20,6 @@ File structure:
 - [Containers](#containers)
   - [Frame packets](#frame-packets)
 - [Key frame info table](#key-frames-table)
-  - Because it's at the end of the file, it prevents to support jumping in time
-    when _download streaming_. You need to get the full file in order to be able
-    to know where are they key frames. You can start streaming from start
-    without jump support.
 
 The location of the audio codec info (codebook) is not yet clarified.
 
@@ -53,7 +52,8 @@ The audio codec ID can be:
 
 - 1: FastAudio
 - 2: Sx
-- 3: IMA-ADPCM (common)
+- 3: IMA-ADPCM: 4-bits samples with a header of 32-bits (index + last sample)
+  per key frame
 - 4: unknown
 
 ### Containers
@@ -85,41 +85,34 @@ processing.
 The container data is a set of _frame packets_. Each packet contains data to
 decode one video frame and audio data for each channel.
 
-| Offset | Type     | Description          |
-| ------ | -------- | -------------------- |
-| 0x00   | uint     | Packet info          |
-| 0x04   | byte[]   | Video frame data     |
-| ....   | byte[][] | Blocks of audio data |
-
-The size of the video data is variable. Each audio block is `128` bytes, with an
-additional `4` bytes for the first block _of each channel_ when the frame packet
-is for a key frame (a complete block of data). The audio blocks are mixed
-between channels, meaning that there will be first a block for channel 0, then a
-block for channel 1, then a block for channel 0 again, repeating until reading
-all the blocks.
-
-> [!NOTE]  
-> It could happen that there aren't enough blocks for each channel. There could
-> be a frame packet with 7 blocks for a 2 audio channel, so the last channel
-> will get less data.
+| Offset | Type     | Description                  |
+| ------ | -------- | ---------------------------- |
+| 0x00   | uint     | Packet info                  |
+| 0x04   | byte[]   | Video frame data             |
+| ....   | byte[][] | Blocks of audio data         |
+| ....   | byte[]   | 0 padding to 32-bits address |
 
 The packet info contains information about this frame packet:
 
-- Bits 0-13: packet size
-- Bits 14-31: number of audio blocks per channel
+- Bits 0-13: number of audio blocks **per channel**
+- Bits 14-31: packet size including padding but without this header
 
-The _packet size_ includes the video and audio block. To get each data size, you
-can use the _number of audio blocks_ as follow:
+Additionally, it's possible to know if it's a _key frame_ without the
+[key frames table](#key-frames-table) by checking the first 16-bits value of the
+video data. If it has the highest bit 15 set to 1, it's a key frame.
 
-```csharp
-int completeAudioBlocks = isKeyFrame ? 1 : 0;
-int regularAudioBlocks = blocks - completeAudioBlocks;
+The size of the video data is variable for each frame. The size of the audio
+depends on the encoding. As we don't know the size of the video data and the
+_packet size_ includes padding bytes, it's not possible to access the audio data
+without running the video decoder first.
 
-int audioDataSize = (completeAudioBlocks * (128 + 4)) + (regularAudioBlocks * 128);
-audioDataSize *= channelsCount;
-int videoDataSize = (int)(packetSize - audioDataSize);
-```
+The blocks of audio are mixed between channels. This means that for a two
+channels video there will be first a block for channel 0, then a block for
+channel 1, then a block for channel 0 again, repeating until reading all the
+blocks for each channel.
 
-> [!IMPORTANT]  
-> This logic works for IMA-ADPCM audio encoding. It remains to be confirmed for
-> other codecs.
+> [!NOTE]  
+> The decoder skips _four_ bytes after reading the video frame date if the video
+> codec is `N3` and the first 16-bits value of the video data has the highest
+> bit set to 1. It's unknown at this moment if it's some adjustment from the
+> internal logic of video decoding or there are four byte to skip.

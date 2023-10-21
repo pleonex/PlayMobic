@@ -1,4 +1,4 @@
-﻿namespace PlayMobic.Container;
+namespace PlayMobic.Container;
 
 using System;
 using System.Collections;
@@ -77,8 +77,13 @@ public sealed class PacketReader : IEnumerator<FramePacket>
         uint packetSize = packetInfo >> 14;
         int audioBlocksCount = (int)(packetInfo & 0x3FFF);
 
-        bool isKeyFrame = container.KeyFramesInfo.Any(i => i.FrameNumber == currentFrame);
+        // Peek video data to know if it's key frame
+        ushort frameKind = reader.ReadUInt16();
+        containerData.Position -= 2;
+        bool isKeyFrame = (frameKind >> 31) == 1;
 
+        // NOTE: THIS DOES NOT WORK. WE CANNOT GET THE VIDEO WITHOUT RUNNING
+        // THE VIDEO DECODER FIRST!!
         // We can get the video packet data from the number of audio blocks.
         int audioDataSize = GetAudioDataSize(isKeyFrame, audioBlocksCount) * container.Info.AudioChannelsCount;
         int videoDataSize = (int)(packetSize - audioDataSize);
@@ -97,6 +102,7 @@ public sealed class PacketReader : IEnumerator<FramePacket>
         var audioPackets = audioData.Select((p, idx) => new StreamPacket(1 + idx, p));
         streamPackets.AddRange(audioPackets);
 
+        reader.SkipPadding(4);
         if (packetSize != (containerData.Position - packetStart)) {
             throw new FormatException("Invalid packet size");
         }

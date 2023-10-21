@@ -1,5 +1,4 @@
 ﻿using System.CommandLine;
-using NAudio.Wave;
 using PlayMobic.Audio;
 using PlayMobic.Container;
 using Yarhl.FileSystem;
@@ -86,15 +85,42 @@ void ExtractAudio(FileInfo videoFile, string outputPath)
 
     Console.WriteLine("Decoded - Saving");
 
+    // TODO: Mix streams to create an stereo file
     audioStream1.Position = 0;
     audioStream2.Position = 0;
-    var waveFormat = new WaveFormat(info.AudioFrequency, 16, 1);
-    var waveAudio1 = new RawSourceWaveStream(audioStream1, waveFormat);
-    var waveAudio2 = new RawSourceWaveStream(audioStream2, waveFormat);
-
-    var mix = new MultiplexingWaveProvider(new[] { waveAudio1, waveAudio2 });
-    WaveFileWriter.CreateWaveFile(outputPath, waveAudio1);
+    ExportWave(audioStream1, 1, info.AudioFrequency, 16)
+        .WriteTo(outputPath);
 
     Console.WriteLine();
     Console.WriteLine("Done");
+}
+
+DataStream ExportWave(DataStream waveData, int channels, int sampleRate, int bitsPerSample)
+{
+    var output = new DataStream();
+
+    int byteRate = channels * sampleRate * bitsPerSample / 8;
+    int fullSampleSize = channels * bitsPerSample / 8;
+
+    var writer = new DataWriter(output);
+    writer.Write("RIFF", nullTerminator: false);
+    writer.Write((uint)(36 + waveData.Length));
+    writer.Write("WAVE", nullTerminator: false);
+
+    // Sub-chunk 'fmt'
+    writer.Write("fmt ", nullTerminator: false);
+    writer.Write((uint)16);             // Sub-chunk size
+    writer.Write((ushort)1);    // Audio format
+    writer.Write((ushort)channels);
+    writer.Write(sampleRate);
+    writer.Write(byteRate);
+    writer.Write((ushort)fullSampleSize);
+    writer.Write((ushort)bitsPerSample);
+
+    // Sub-chunk 'data'
+    writer.Write("data", nullTerminator: false);
+    writer.Write((uint)waveData.Length);
+    waveData.WriteTo(output);
+
+    return output;
 }
