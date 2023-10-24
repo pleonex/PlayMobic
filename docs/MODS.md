@@ -25,22 +25,22 @@ The location of the audio codec info (codebook) is not yet clarified.
 
 ### MODS header
 
-| Offset | Type    | Description                                     |
-| ------ | ------- | ----------------------------------------------- |
-| 0x00   | char[4] | Format identifier: `MODS`                       |
-| 0x04   | ushort  | Container kind ID                               |
-| 0x06   | ushort  | Container kind version                          |
-| 0x08   | int     | Frames count                                    |
-| 0x0C   | int     | Video width resolution                          |
-| 0x10   | int     | Video height resolution                         |
-| 0x14   | uint    | Frames per second * 0x01000000                  |
-| 0x18   | ushort  | Audio codec ID                                  |
-| 0x1A   | ushort  | Audio channels count                            |
-| 0x1C   | uint    | Audio frequency in hertz                        |
-| 0x20   | uint    | Index of the largest frame                      |
-| 0x24   | uint    | Offset to the audio codec info section          |
-| 0x28   | uint    | Offset to the key frames table                  |
-| 0x2C   | uint    | Number of key frames                            |
+| Offset | Type    | Description                            |
+| ------ | ------- | -------------------------------------- |
+| 0x00   | char[4] | Format identifier: `MODS`              |
+| 0x04   | ushort  | Container kind ID                      |
+| 0x06   | ushort  | Container kind version                 |
+| 0x08   | int     | Frames count                           |
+| 0x0C   | int     | Video width resolution                 |
+| 0x10   | int     | Video height resolution                |
+| 0x14   | uint    | Frames per second \* 0x01000000        |
+| 0x18   | ushort  | Audio codec ID                         |
+| 0x1A   | ushort  | Audio channels count                   |
+| 0x1C   | uint    | Audio frequency in hertz               |
+| 0x20   | uint    | Index of the largest frame             |
+| 0x24   | uint    | Offset to the audio codec info section |
+| 0x28   | uint    | Offset to the key frames table         |
+| 0x2C   | uint    | Number of key frames                   |
 
 The container kind can be:
 
