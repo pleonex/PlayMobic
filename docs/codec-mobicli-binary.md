@@ -52,9 +52,9 @@ ends on a full byte. Each frame consists on:
 | Bits | Type                | Description                               |
 | ---- | ------------------- | ----------------------------------------- |
 | ...  | MotionPredicition[] | Motion prediction data for the macroblock |
-| ...  | PFrameCoefficient[] | Luma coefficients                         |
-| ...  | PFrameCoefficient[] | U block data                              |
-| ...  | PFrameCoefficient[] | V block data                              |
+| ...  | PBlock[]            | Luma coefficients                         |
+| ...  | PBlock[]            | U block data                              |
+| ...  | PBlock[]            | V block data                              |
 
 ### Motion prediction
 
