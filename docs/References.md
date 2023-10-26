@@ -25,12 +25,16 @@ the following resources to get you started.
   - [YUV color format](https://learn.microsoft.com/en-us/windows/win32/medfound/about-yuv-video)
   - [YUV downsampling](https://learn.microsoft.com/en-us/windows/win32/medfound/recommended-8-bit-yuv-formats-for-video-rendering)
 
-## MODS video codec
+## Mobiclip video codec
 
-- High-level description from
-  [multimedia wiki](https://wiki.multimedia.cx/index.php/Mobiclip_Video_Codec)
 - Amazing research and reference code by Gericom in
   [MobiclipDecoder](https://github.com/Gericom/MobiclipDecoder)
 - Amazing refactor of the video decoder by Adib Surani in
   [Mobius](https://github.com/AdibSurani/Mobius)
+- High-level description from
+  [multimedia wiki](https://wiki.multimedia.cx/index.php/Mobiclip_Video_Codec)
+- [Review of Actimagine codecs](https://codecs.multimedia.cx/2020/08/a-quick-review-of-actimagine-video-codecs/)
+  by Kostya
+- [Glance at Mobiclip HD codec](https://codecs.multimedia.cx/2014/01/a-glance-at-mobiclip-hd/)
+  by Kostya
 - Pokémon Conquest assembly code (overlay 6) 😉

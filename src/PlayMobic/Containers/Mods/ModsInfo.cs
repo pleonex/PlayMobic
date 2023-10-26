@@ -1,12 +1,14 @@
 ﻿namespace PlayMobic.Containers.Mods;
 
+using PlayMobic;
+
 public class ModsInfo
 {
     public static uint FramesPerSecondBase => 0x01000000;
 
     public string ContainerFormatId { get; set; } = string.Empty;
 
-    public int ContainerFormatId2 { get; set; }
+    public VideoCodecKind VideoCodec { get; set; }
 
     public int FramesCount { get; set; }
 

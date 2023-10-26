@@ -23,35 +23,35 @@ File structure:
 
 ### MODS header
 
-| Offset | Type     | Description                            |
-| ------ | -------- | -------------------------------------- |
-| 0x00   | char[4]  | Format identifier: `MODS`              |
-| 0x04   | ushort   | Container kind ID                      |
-| 0x06   | ushort   | Container kind ID2                     |
-| 0x08   | int      | Frames count                           |
-| 0x0C   | int      | Video width resolution                 |
-| 0x10   | int      | Video height resolution                |
-| 0x14   | uint     | Frames per second \* 0x01000000        |
-| 0x18   | ushort   | Audio codec ID                         |
-| 0x1A   | ushort   | Audio channels count                   |
-| 0x1C   | uint     | Audio frequency in hertz               |
-| 0x20   | uint     | Size of the largest frame              |
-| 0x24   | uint     | Offset to the audio codec info section |
-| 0x28   | uint     | Offset to the key frames table         |
-| 0x2C   | uint     | Number of key frames                   |
-| 0x30   | uint[][] | Encoding parameters                    |
+| Offset | Type        | Description                                         |
+| ------ | ----------- | --------------------------------------------------- |
+| 0x00   | char[4]     | Format identifier: `MODS`                           |
+| 0x04   | ushort      | Container format ID                                 |
+| 0x06   | ushort      | Video codec ID                                      |
+| 0x08   | int         | Frames count                                        |
+| 0x0C   | int         | Video width resolution                              |
+| 0x10   | int         | Video height resolution                             |
+| 0x14   | uint        | Frames per second \* 0x01000000                     |
+| 0x18   | ushort      | Audio codec ID                                      |
+| 0x1A   | ushort      | Audio channels count                                |
+| 0x1C   | uint        | Audio frequency in hertz                            |
+| 0x20   | uint        | Size of the largest frame                           |
+| 0x24   | uint        | Offset to the audio codec info section              |
+| 0x28   | uint        | Offset to the key frames table                      |
+| 0x2C   | uint        | Number of key frames                                |
+| 0x30   | Parameter[] | (only N3 containers) Additional encoding parameters |
 
-The container kind can be:
+The container formats can be:
 
 - `N2`
 - `N3`: supports [additional parameters](#parameters)
 
-in both cases the second ID must be `0x0A` (platform or new line?).
+The video codec ID must be `0x0A` for the Mobiclip variant of NDS.
 
 The audio codec ID can be:
 
 - 0: No audio
-- 1: DSP ADPCM (TBC)
+- 1: LPC variant
 - 2: FastAudio
 - 3: IMA-ADPCM: 4-bits samples with a header of 32-bits (index + last sample)
   per key frame

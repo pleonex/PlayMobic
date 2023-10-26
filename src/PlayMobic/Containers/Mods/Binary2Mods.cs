@@ -2,6 +2,7 @@
 
 using System;
 using System.Collections.ObjectModel;
+using PlayMobic;
 using Yarhl.FileFormat;
 using Yarhl.IO;
 
@@ -64,10 +65,9 @@ public class Binary2Mods : IConverter<IBinary, ModsVideo>
             throw new NotSupportedException("Unsupported container format");
         }
 
-        header.Info.ContainerFormatId2 = reader.ReadUInt16();
-        if (header.Info.ContainerFormatId2 != 0x0A) {
-            throw new NotSupportedException("Unsupported container format");
-        }
+        header.Info.VideoCodec = reader.ReadUInt16() == 0x0A
+            ? VideoCodecKind.MobiclipV1
+            : throw new NotSupportedException("Unsupported container format");
 
         header.Info.FramesCount = reader.ReadInt32();
         header.Info.Width = reader.ReadInt32();
@@ -121,7 +121,7 @@ public class Binary2Mods : IConverter<IBinary, ModsVideo>
     private static AudioCodecKind GetAudioCodec(int id) =>
         id switch {
             0 => AudioCodecKind.None,
-            1 => AudioCodecKind.DspAdPcm,
+            1 => AudioCodecKind.SxLpc,
             2 => AudioCodecKind.FastAudio,
             3 => AudioCodecKind.ImaAdPcm,
             4 => AudioCodecKind.RawPcm16,

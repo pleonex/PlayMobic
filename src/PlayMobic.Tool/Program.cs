@@ -43,14 +43,15 @@ void PrintInfo(FileInfo videoFile)
     ModsVideo video = videoNode.GetFormatAs<ModsVideo>()!;
     ModsInfo info = video.Info;
 
-    Console.WriteLine("  Video codec ID: {0} ({1:X2})", info.ContainerFormatId, info.ContainerFormatId2);
-    Console.WriteLine("  Resolution: {0}x{1}", info.Width, info.Height);
-    Console.WriteLine("  Duration: {0} frames, {1}", info.FramesCount, info.Duration);
-    Console.WriteLine("  Frames per second: {0}", info.FramesPerSecond);
-    Console.WriteLine("  Key frames: {0}", video.KeyFramesInfo.Count);
+    Console.WriteLine("  Container format: {0}", info.ContainerFormatId);
+    Console.WriteLine("  Video codec: {0}", info.VideoCodec);
+    Console.WriteLine("    Resolution: {0}x{1}", info.Width, info.Height);
+    Console.WriteLine("    Duration: {0} frames, {1}", info.FramesCount, info.Duration);
+    Console.WriteLine("    Frames per second: {0}", info.FramesPerSecond);
+    Console.WriteLine("    Key frames: {0}", video.KeyFramesInfo.Count);
     Console.WriteLine("  Audio codec: {0}", info.AudioCodec);
-    Console.WriteLine("  Audio channels: {0}", info.AudioChannelsCount);
-    Console.WriteLine("  Audio frequency: {0} Hz", info.AudioFrequency);
+    Console.WriteLine("    Audio channels: {0}", info.AudioChannelsCount);
+    Console.WriteLine("    Audio frequency: {0} Hz", info.AudioFrequency);
     Console.WriteLine("  Extra parameters: {0}", info.AdditionalParameters.Count);
     foreach (VideoParameter param in info.AdditionalParameters) {
         Console.WriteLine("    {0}: {1}", param.Id, string.Join(", ", param.Parameters.Select(p => $"{p:X4}")));
