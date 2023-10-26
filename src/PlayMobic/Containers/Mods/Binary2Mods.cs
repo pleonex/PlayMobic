@@ -1,4 +1,4 @@
-﻿namespace PlayMobic.Container;
+﻿namespace PlayMobic.Containers.Mods;
 
 using System;
 using System.Collections.ObjectModel;
@@ -49,7 +49,7 @@ public class Binary2Mods : IConverter<IBinary, ModsVideo>
         header.Info.Width = reader.ReadInt32();
         header.Info.Height = reader.ReadInt32();
         header.Info.FramesPerSecond = reader.ReadUInt32() / (double)ModsInfo.FramesPerSecondBase;
-        header.Info.AudioCodec = (AudioCodecKind)reader.ReadUInt16();
+        header.Info.AudioCodec = GetAudioCodec(reader.ReadUInt16());
         header.Info.AudioChannelsCount = reader.ReadUInt16();
         header.Info.AudioFrequency = reader.ReadInt32();
 
@@ -73,6 +73,16 @@ public class Binary2Mods : IConverter<IBinary, ModsVideo>
 
         return infos;
     }
+
+    private static AudioCodecKind GetAudioCodec(int id) =>
+        id switch {
+            0 => AudioCodecKind.None,
+            1 => AudioCodecKind.Sx,
+            2 => AudioCodecKind.FastAudio,
+            3 => AudioCodecKind.ImaAdpcm,
+            4 => AudioCodecKind.Unknown4,
+            _ => throw new NotSupportedException("Unsupported audio codec"),
+        };
 
     private sealed record ModsHeader
     {

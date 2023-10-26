@@ -1,4 +1,4 @@
-﻿namespace PlayMobic.Container;
+﻿namespace PlayMobic.Containers;
 
 using Yarhl.IO;
 

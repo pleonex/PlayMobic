@@ -1,8 +1,7 @@
-﻿namespace PlayMobic.Container;
+﻿namespace PlayMobic.Containers.Mods;
 
 using System;
 using System.Collections;
-using System.Collections.Generic;
 using System.Linq;
 using Yarhl.IO;
 
@@ -10,7 +9,7 @@ using Yarhl.IO;
 /// Move to the next stream packet on each iteration, video or audio blocks at a time.
 /// When all the blocks/stream for a frame packets are consumed, it reads the next.
 /// </summary>
-public sealed class ModsPacketReader : IEnumerator<MediaPacket>
+public sealed class ModsPacketReader : IDemuxerPacketReader<MediaPacket>
 {
     private readonly ModsVideo container;
     private readonly int startFrame;
@@ -104,10 +103,10 @@ public sealed class ModsPacketReader : IEnumerator<MediaPacket>
         // the key frame table, but that would be slower.
         ushort frameKind = reader.ReadUInt16();
         containerData.Position -= 2;
-        currentIsKeyFrame = (frameKind >> 31) == 1;
+        currentIsKeyFrame = frameKind >> 31 == 1;
 
         currentPacketStream = 0;
-        numStreamsPerFramePacket = 1 + (audioBlocksCount * container.Info.AudioChannelsCount);
+        numStreamsPerFramePacket = 1 + audioBlocksCount * container.Info.AudioChannelsCount;
         packetStream = new DataStream(containerData, containerData.Position, packetSize);
     }
 }

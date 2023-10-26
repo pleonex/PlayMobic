@@ -1,4 +1,4 @@
-namespace PlayMobic.Container;
+﻿namespace PlayMobic.Containers.Mods;
 
 using System.Collections.ObjectModel;
 using Yarhl.FileFormat;

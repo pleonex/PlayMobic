@@ -1,4 +1,4 @@
-﻿namespace PlayMobic.Container;
+﻿namespace PlayMobic.Containers.Mods;
 
 public class ModsInfo
 {
