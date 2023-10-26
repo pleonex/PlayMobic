@@ -6,7 +6,7 @@ using Yarhl.IO;
 
 return await new RootCommand("Tool for MODS videos") {
     SetupInfoCommand(),
-    SetupExtractAudioCommand(),
+    // TODO: SetupExtractAudioCommand(),
 }.InvokeAsync(args);
 
 Command SetupInfoCommand()
@@ -64,63 +64,15 @@ void ExtractAudio(FileInfo videoFile, string outputPath)
     ModsVideo video = videoNode.GetFormatAs<ModsVideo>()!;
     ModsInfo info = video.Info;
 
-    var audioStream1 = new DataStream();
-    var audioDecoder1 = new ImaAdpcmDecoder();
-
-    var audioStream2 = new DataStream();
-    var audioDecoder2 = new ImaAdpcmDecoder();
-
     var demuxer = new ModsDemuxer(video);
-    foreach (FramePacket framePacket in demuxer.ReadFrames()) {
+    foreach (MediaPacket framePacket in demuxer.ReadFrames()) {
+        // TODO
         Console.Write('.');
-
-        Stream stream1 = framePacket.StreamPackets.Where(p => p.StreamIndex == 1).First().Data;
-        byte[] output = audioDecoder1.Decode(stream1, framePacket.IsKeyFrame);
-        audioStream1.Write(output);
-
-        Stream stream2 = framePacket.StreamPackets.Where(p => p.StreamIndex == 2).First().Data;
-        output = audioDecoder2.Decode(stream2, framePacket.IsKeyFrame);
-        audioStream2.Write(output);
     }
 
+    // TODO
     Console.WriteLine("Decoded - Saving");
-
-    // TODO: Mix streams to create an stereo file
-    audioStream1.Position = 0;
-    audioStream2.Position = 0;
-    ExportWave(audioStream1, 1, info.AudioFrequency, 16)
-        .WriteTo(outputPath);
 
     Console.WriteLine();
     Console.WriteLine("Done");
-}
-
-DataStream ExportWave(DataStream waveData, int channels, int sampleRate, int bitsPerSample)
-{
-    var output = new DataStream();
-
-    int byteRate = channels * sampleRate * bitsPerSample / 8;
-    int fullSampleSize = channels * bitsPerSample / 8;
-
-    var writer = new DataWriter(output);
-    writer.Write("RIFF", nullTerminator: false);
-    writer.Write((uint)(36 + waveData.Length));
-    writer.Write("WAVE", nullTerminator: false);
-
-    // Sub-chunk 'fmt'
-    writer.Write("fmt ", nullTerminator: false);
-    writer.Write((uint)16);             // Sub-chunk size
-    writer.Write((ushort)1);    // Audio format
-    writer.Write((ushort)channels);
-    writer.Write(sampleRate);
-    writer.Write(byteRate);
-    writer.Write((ushort)fullSampleSize);
-    writer.Write((ushort)bitsPerSample);
-
-    // Sub-chunk 'data'
-    writer.Write("data", nullTerminator: false);
-    writer.Write((uint)waveData.Length);
-    waveData.WriteTo(output);
-
-    return output;
 }

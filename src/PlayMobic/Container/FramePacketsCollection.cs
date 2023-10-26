@@ -3,7 +3,7 @@ using System;
 using System.Collections;
 using System.Collections.Generic;
 
-public class FramePacketsCollection : IEnumerable<FramePacket>
+public class FramePacketsCollection : IEnumerable<MediaPacket>
 {
     private readonly ModsVideo video;
     private readonly int startFrame;
@@ -14,9 +14,9 @@ public class FramePacketsCollection : IEnumerable<FramePacket>
         this.startFrame = startFrame;
     }
 
-    public IEnumerator<FramePacket> GetEnumerator()
+    public IEnumerator<MediaPacket> GetEnumerator()
     {
-        return new PacketReader(video, startFrame);
+        return new ModsPacketReader(video, startFrame);
     }
 
     IEnumerator IEnumerable.GetEnumerator()
