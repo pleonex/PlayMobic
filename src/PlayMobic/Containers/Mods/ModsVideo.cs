@@ -12,11 +12,14 @@ public sealed class ModsVideo : IFormat, IDisposable
         Info = new ModsInfo();
         KeyFramesInfo = new();
         Data = data;
+        AudioCodebook = Array.Empty<Stream>();
     }
 
     public ModsInfo Info { get; init; }
 
     public Collection<KeyFrameInfo> KeyFramesInfo { get; init; }
+
+    public Stream[] AudioCodebook { get; init; }
 
     public Stream Data { get; init; }
 

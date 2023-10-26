@@ -43,7 +43,7 @@ void PrintInfo(FileInfo videoFile)
     ModsVideo video = videoNode.GetFormatAs<ModsVideo>()!;
     ModsInfo info = video.Info;
 
-    Console.WriteLine("  Video codec ID: {0} ({1:X2})", info.VideoCodecId, info.Unknown06);
+    Console.WriteLine("  Video codec ID: {0} ({1:X2})", info.ContainerFormatId, info.ContainerFormatId2);
     Console.WriteLine("  Resolution: {0}x{1}", info.Width, info.Height);
     Console.WriteLine("  Duration: {0} frames, {1}", info.FramesCount, info.Duration);
     Console.WriteLine("  Frames per second: {0}", info.FramesPerSecond);
@@ -51,6 +51,10 @@ void PrintInfo(FileInfo videoFile)
     Console.WriteLine("  Audio codec: {0}", info.AudioCodec);
     Console.WriteLine("  Audio channels: {0}", info.AudioChannelsCount);
     Console.WriteLine("  Audio frequency: {0} Hz", info.AudioFrequency);
+    Console.WriteLine("  Extra parameters: {0}", info.AdditionalParameters.Count);
+    foreach (VideoParameter param in info.AdditionalParameters) {
+        Console.WriteLine("    {0}: {1}", param.Id, string.Join(", ", param.Parameters.Select(p => $"{p:X4}")));
+    }
 }
 
 void ExtractAudio(FileInfo videoFile, string outputPath)

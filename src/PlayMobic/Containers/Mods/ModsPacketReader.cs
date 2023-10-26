@@ -106,7 +106,7 @@ public sealed class ModsPacketReader : IDemuxerPacketReader<MediaPacket>
         currentIsKeyFrame = frameKind >> 31 == 1;
 
         currentPacketStream = 0;
-        numStreamsPerFramePacket = 1 + audioBlocksCount * container.Info.AudioChannelsCount;
+        numStreamsPerFramePacket = 1 + (audioBlocksCount * container.Info.AudioChannelsCount);
         packetStream = new DataStream(containerData, containerData.Position, packetSize);
     }
 }

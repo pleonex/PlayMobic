@@ -4,9 +4,9 @@ public class ModsInfo
 {
     public static uint FramesPerSecondBase => 0x01000000;
 
-    public string VideoCodecId { get; set; } = string.Empty;
+    public string ContainerFormatId { get; set; } = string.Empty;
 
-    public int Unknown06 { get; set; }
+    public int ContainerFormatId2 { get; set; }
 
     public int FramesCount { get; set; }
 
@@ -23,4 +23,6 @@ public class ModsInfo
     public int AudioChannelsCount { get; set; }
 
     public int AudioFrequency { get; set; }
+
+    public IReadOnlyList<VideoParameter> AdditionalParameters { get; set; } = Array.Empty<VideoParameter>();
 }

@@ -3,8 +3,8 @@
 public enum AudioCodecKind
 {
     None,
-    Sx,
+    DspAdPcm,
     FastAudio,
-    ImaAdpcm,
-    Unknown4
+    ImaAdPcm,
+    RawPcm16
 }

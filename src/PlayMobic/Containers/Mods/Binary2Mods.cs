@@ -7,7 +7,7 @@ using Yarhl.IO;
 
 public class Binary2Mods : IConverter<IBinary, ModsVideo>
 {
-    private const uint DataOffset = 0x34; // after header
+    private const uint AudioCodebookLength = 0xC34; // hard-coded in code
 
     public ModsVideo Convert(IBinary source)
     {
@@ -19,19 +19,35 @@ public class Binary2Mods : IConverter<IBinary, ModsVideo>
         // Container header
         ModsHeader header = ReadHeader(reader);
 
-        // Packets data
-        long endDataOffset = header.KeyFramesTableOffset;
-        long dataLength = endDataOffset - DataOffset;
-        var dataStream = new DataStream(source.Stream, DataOffset, dataLength);
+        // Get the video in a separate stream so we ensure we don't over-read.
+        uint dataOffset = (uint)reader.Stream.Position;
+        long endDataOffset = (header.AudioCodecInfoOffset != 0 && header.AudioCodecInfoOffset < header.KeyFramesTableOffset)
+            ? header.AudioCodecInfoOffset
+            : header.KeyFramesTableOffset;
+        long dataLength = endDataOffset - dataOffset;
+
+        var dataStream = new DataStream(reader.Stream, reader.Stream.Position, dataLength);
+
+        // Audio codebooks
+        var codebookList = new List<Stream>();
+        if (header.AudioCodecInfoOffset != 0) {
+            long codebookOffset = header.AudioCodecInfoOffset;
+
+            for (int i = 0; i < header.Info.AudioChannelsCount; i++) {
+                var channelBook = new DataStream(source.Stream, codebookOffset, AudioCodebookLength);
+                codebookList.Add(channelBook);
+                codebookOffset += AudioCodebookLength;
+            }
+        }
 
         // Key frame info table
         reader.Stream.Position = header.KeyFramesTableOffset;
-        Collection<KeyFrameInfo> keyFramesInfo = ReadKeyFramesTable(reader, header.KeyFramesCount);
+        Collection<KeyFrameInfo> keyFramesInfo = ReadKeyFramesTable(reader, dataOffset, header.KeyFramesCount);
 
-        // TODO: Get stream for the audio codec info (codebook)
         return new ModsVideo(dataStream) {
             Info = header.Info,
             KeyFramesInfo = keyFramesInfo,
+            AudioCodebook = codebookList.ToArray(),
         };
     }
 
@@ -43,8 +59,16 @@ public class Binary2Mods : IConverter<IBinary, ModsVideo>
 
         var header = new ModsHeader();
 
-        header.Info.VideoCodecId = reader.ReadString(2);
-        header.Info.Unknown06 = reader.ReadUInt16();
+        header.Info.ContainerFormatId = reader.ReadString(2);
+        if (header.Info.ContainerFormatId is not ("N2" or "N3")) {
+            throw new NotSupportedException("Unsupported container format");
+        }
+
+        header.Info.ContainerFormatId2 = reader.ReadUInt16();
+        if (header.Info.ContainerFormatId2 != 0x0A) {
+            throw new NotSupportedException("Unsupported container format");
+        }
+
         header.Info.FramesCount = reader.ReadInt32();
         header.Info.Width = reader.ReadInt32();
         header.Info.Height = reader.ReadInt32();
@@ -57,17 +81,37 @@ public class Binary2Mods : IConverter<IBinary, ModsVideo>
         header.AudioCodecInfoOffset = reader.ReadUInt32();
         header.KeyFramesTableOffset = reader.ReadUInt32();
         header.KeyFramesCount = reader.ReadUInt32();
-        header.Unknown = reader.ReadUInt32();
+
+        // Additional parameters
+        var additionalParameters = new List<VideoParameter>();
+        if (header.Info.ContainerFormatId == "N3") {
+            string parameterId;
+            do {
+                parameterId = reader.ReadString(2);
+                int parametersCount = reader.ReadUInt16();
+
+                if (parameterId != "HE") {
+                    var parameters = new List<uint>();
+                    for (int i = 0; i < parametersCount; i++) {
+                        parameters.Add(reader.ReadUInt32());
+                    }
+
+                    additionalParameters.Add(new VideoParameter(parameterId, parameters));
+                }
+            } while (parameterId != "HE" && !reader.Stream.EndOfStream);
+        }
+
+        header.Info.AdditionalParameters = additionalParameters;
 
         return header;
     }
 
-    private static Collection<KeyFrameInfo> ReadKeyFramesTable(DataReader reader, uint count)
+    private static Collection<KeyFrameInfo> ReadKeyFramesTable(DataReader reader, uint dataOffset, uint count)
     {
         var infos = new Collection<KeyFrameInfo>();
         for (int i = 0; i < count; i++) {
             int number = reader.ReadInt32();
-            uint offset = reader.ReadUInt32() - DataOffset; // relative to the data stream
+            uint offset = reader.ReadUInt32() - dataOffset; // relative to the data stream
             infos.Add(new KeyFrameInfo(number, offset));
         }
 
@@ -77,10 +121,10 @@ public class Binary2Mods : IConverter<IBinary, ModsVideo>
     private static AudioCodecKind GetAudioCodec(int id) =>
         id switch {
             0 => AudioCodecKind.None,
-            1 => AudioCodecKind.Sx,
+            1 => AudioCodecKind.DspAdPcm,
             2 => AudioCodecKind.FastAudio,
-            3 => AudioCodecKind.ImaAdpcm,
-            4 => AudioCodecKind.Unknown4,
+            3 => AudioCodecKind.ImaAdPcm,
+            4 => AudioCodecKind.RawPcm16,
             _ => throw new NotSupportedException("Unsupported audio codec"),
         };
 
@@ -95,7 +139,5 @@ public class Binary2Mods : IConverter<IBinary, ModsVideo>
         public uint KeyFramesTableOffset { get; set; }
 
         public uint KeyFramesCount { get; set; }
-
-        public uint Unknown { get; set; }
     }
 }

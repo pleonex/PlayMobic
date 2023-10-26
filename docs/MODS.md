@@ -17,57 +17,68 @@ The integers are encoded in little endian.
 File structure:
 
 - [Header](#mods-header)
-- [Containers](#containers)
-  - [Frame packets](#frame-packets)
+- [Frame packets](#frame-packets)
+- Audio codec info (codebook)
 - [Key frame info table](#key-frames-table)
-
-The location of the audio codec info (codebook) is not yet clarified.
 
 ### MODS header
 
-| Offset | Type    | Description                            |
-| ------ | ------- | -------------------------------------- |
-| 0x00   | char[4] | Format identifier: `MODS`              |
-| 0x04   | ushort  | Container kind ID                      |
-| 0x06   | ushort  | Container kind version                 |
-| 0x08   | int     | Frames count                           |
-| 0x0C   | int     | Video width resolution                 |
-| 0x10   | int     | Video height resolution                |
-| 0x14   | uint    | Frames per second \* 0x01000000        |
-| 0x18   | ushort  | Audio codec ID                         |
-| 0x1A   | ushort  | Audio channels count                   |
-| 0x1C   | uint    | Audio frequency in hertz               |
-| 0x20   | uint    | Index of the largest frame             |
-| 0x24   | uint    | Offset to the audio codec info section |
-| 0x28   | uint    | Offset to the key frames table         |
-| 0x2C   | uint    | Number of key frames                   |
+| Offset | Type     | Description                            |
+| ------ | -------- | -------------------------------------- |
+| 0x00   | char[4]  | Format identifier: `MODS`              |
+| 0x04   | ushort   | Container kind ID                      |
+| 0x06   | ushort   | Container kind ID2                     |
+| 0x08   | int      | Frames count                           |
+| 0x0C   | int      | Video width resolution                 |
+| 0x10   | int      | Video height resolution                |
+| 0x14   | uint     | Frames per second \* 0x01000000        |
+| 0x18   | ushort   | Audio codec ID                         |
+| 0x1A   | ushort   | Audio channels count                   |
+| 0x1C   | uint     | Audio frequency in hertz               |
+| 0x20   | uint     | Size of the largest frame              |
+| 0x24   | uint     | Offset to the audio codec info section |
+| 0x28   | uint     | Offset to the key frames table         |
+| 0x2C   | uint     | Number of key frames                   |
+| 0x30   | uint[][] | Encoding parameters                    |
 
 The container kind can be:
 
 - `N2`
-- `N3` with version `0A`
+- `N3`: supports [additional parameters](#parameters)
+
+in both cases the second ID must be `0x0A` (platform or new line?).
 
 The audio codec ID can be:
 
 - 0: No audio
-- 1: FastAudio
-- 2: Sx
+- 1: DSP ADPCM (TBC)
+- 2: FastAudio
 - 3: IMA-ADPCM: 4-bits samples with a header of 32-bits (index + last sample)
   per key frame
-- 4: unknown
+- 4: Raw PCM-16
 
-### Containers
+The video codec is the same always.
 
-The container kind `N3` seems to support multiple sub-containers. After the
-header (`0x30`), the collection of sub-containers start. Each sub-container has
-a 32-bits value with information followed with the data.
+#### Parameters
+
+The container kind `N3` seems to support an extensible list of extra parameters.
+After the standard header (`0x30` bytes long), there is a list of blocks to
+define the additional parameters. Each block has a header followed by a variable
+list of 32-bits values.
+
+To find the start of the video data, the demuxer should iterate through the list
+until finding the block with ID `HE` (_header end_).
 
 | Offset | Type    | Description                 |
 | ------ | ------- | --------------------------- |
 | 0x00   | char[2] | ID                          |
 | 0x02   | ushort  | Length in blocks of 32-bits |
+| 0x04   | uint[]  | Parameters                  |
 
-The only known ID is `HE` that contains video with audio.
+### Audio codec info
+
+This block of data contains information for the audio codec _DSP ADPCM_ (format
+1). The size is always `0xC34` bytes. It contains a list of coefficients.
 
 ### Key frames table
 
@@ -99,7 +110,8 @@ The packet info contains information about this frame packet:
 
 Additionally, it's possible to know if it's a _key frame_ without the
 [key frames table](#key-frames-table) by checking the first 16-bits value of the
-video data. If it has the highest bit 15 set to 1, it's a key frame.
+video data. If it has the highest bit 15 set to 1, it's a key frame (first bit
+in the video _bitstream_).
 
 The size of the video data is variable for each frame. The size of the audio
 depends on the encoding. As we don't know the size of the video data and the
@@ -113,6 +125,12 @@ blocks for each channel.
 
 > [!NOTE]  
 > The decoder skips _four_ bytes after reading the video frame date if the video
-> codec is `N3` and the first 16-bits value of the video data has the highest
-> bit set to 1. It's unknown at this moment if it's some adjustment from the
-> internal logic of video decoding or there are four byte to skip.
+> codec is `N3` and it's a key frame. It's unknown at this moment if it's some
+> adjustment from the internal logic of video decoding or there are four byte to
+> skip.
+
+The size of the audio blocks is fixed for some encoders:
+
+- FastAudio: 0x28 bytes.
+- IMA-AD PCM: 0x84 if it's a key frame, 0x80 bytes otherwise.
+- Raw PCM-16: 0x200 bytes.
