@@ -14,6 +14,8 @@ Project("{2150E333-8FDC-42A3-9474-1A3956D46DE8}") = "Solution Items", "Solution 
 		..\README.md = ..\README.md
 	EndProjectSection
 EndProject
+Project("{FAE04EC0-301F-11D3-BF4B-00C04F79EFBC}") = "PlayMobic.Tests", "PlayMobic.Tests\PlayMobic.Tests.csproj", "{F8B8C5FF-BFF6-4459-A0FA-4DFFCF91DD25}"
+EndProject
 Global
 	GlobalSection(SolutionConfigurationPlatforms) = preSolution
 		Debug|Any CPU = Debug|Any CPU
@@ -28,6 +30,10 @@ Global
 		{F4F26DC9-F611-4CE6-B549-8609AF9DA4B1}.Debug|Any CPU.Build.0 = Debug|Any CPU
 		{F4F26DC9-F611-4CE6-B549-8609AF9DA4B1}.Release|Any CPU.ActiveCfg = Release|Any CPU
 		{F4F26DC9-F611-4CE6-B549-8609AF9DA4B1}.Release|Any CPU.Build.0 = Release|Any CPU
+		{F8B8C5FF-BFF6-4459-A0FA-4DFFCF91DD25}.Debug|Any CPU.ActiveCfg = Debug|Any CPU
+		{F8B8C5FF-BFF6-4459-A0FA-4DFFCF91DD25}.Debug|Any CPU.Build.0 = Debug|Any CPU
+		{F8B8C5FF-BFF6-4459-A0FA-4DFFCF91DD25}.Release|Any CPU.ActiveCfg = Release|Any CPU
+		{F8B8C5FF-BFF6-4459-A0FA-4DFFCF91DD25}.Release|Any CPU.Build.0 = Release|Any CPU
 	EndGlobalSection
 	GlobalSection(SolutionProperties) = preSolution
 		HideSolutionNode = FALSE

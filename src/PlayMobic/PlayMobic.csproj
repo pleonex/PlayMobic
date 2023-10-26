@@ -10,4 +10,8 @@
     <PackageReference Include="Yarhl" Version="4.0.0-preview.221" />
   </ItemGroup>
 
+  <ItemGroup>
+    <InternalsVisibleTo Include="PlayMobic.Tests" />
+  </ItemGroup>
+
 </Project>
