@@ -3,6 +3,7 @@
 The Mobiclip video encoding was developed by
 [Actimagine (now NERD)](https://en.wikipedia.org/wiki/Nintendo_European_Research_%26_Development)
 for Nintendo DS. This encoding is also used on Nintendo 3DS with some variants.
+Related formats are also used for GBA and Wii.
 
 The encoding is a variant of H.264.
 

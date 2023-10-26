@@ -1,5 +1,11 @@
 # Mobiclip encoding - binary format overview
 
+> [!NOTE]  
+> The binary format of the codec based on H.264 is not easy to describe with
+> tables. As an example the official H.264 specification explains the format
+> (_syntax in tabular form_) with pseudo-code on a table (section 7.3). I prefer
+> to try to keep it simple using some words instead of code.
+
 Binary frames are saved independently in the _MODS_ container. Data is saved on
 a _bit-stream_ where we are reading bit by bit, not on a byte boundary. Frames
 ends on a full byte. Each frame consists on:
@@ -27,9 +33,9 @@ ends on a full byte. Each frame consists on:
 
 ### P MacroBlocks
 
-| Bits | Type | Description                             |
-| ---- | ---- | --------------------------------------- |
-| ...  | int  | Huffman encoded motion prediction index |
+| Bits | Type | Description                           |
+| ---- | ---- | ------------------------------------- |
+| ...  | int  | CAVLC encoded motion prediction index |
 
 - If index is 6: [macroblock](#macroblock) data without coefficient
 - If index is 7: [macroblock](#macroblock) data with coefficients
@@ -67,9 +73,9 @@ ends on a full byte. Each frame consists on:
 
 - Otherwise
 
-| Bits | Type   | Description                  |
-| ---- | ------ | ---------------------------- |
-| ...  | int[2] | Huffman motion encoded index |
+| Bits | Type   | Description                |
+| ---- | ------ | -------------------------- |
+| ...  | int[2] | CAVLC motion encoded index |
 
 ## Block
 
@@ -103,6 +109,6 @@ Then if we need to add coefficient, read them.
 
 ## Coefficients
 
-| Bits | Type  | Description                                                  |
-| ---- | ----- | ------------------------------------------------------------ |
-| ...  | int[] | Quantization value table encoded with run-length and huffman |
+| Bits | Type  | Description                            |
+| ---- | ----- | -------------------------------------- |
+| ...  | int[] | CAVLC encoded quantization value table |
