@@ -37,4 +37,5 @@ the following resources to get you started.
   by Kostya
 - [Glance at Mobiclip HD codec](https://codecs.multimedia.cx/2014/01/a-glance-at-mobiclip-hd/)
   by Kostya
+- [VxDS codec](https://wiki.multimedia.cx/index.php/Actimagine_Video_Codec)
 - Pokémon Conquest assembly code (overlay 6) 😉

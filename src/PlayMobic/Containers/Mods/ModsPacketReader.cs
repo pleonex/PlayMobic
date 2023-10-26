@@ -69,7 +69,10 @@ public sealed class ModsPacketReader : IDemuxerPacketReader<MediaPacket>
         Current?.Dispose();
 
         var streamData = new DataStream(packetStream!, packetOffset, packetStream!.Length - packetOffset);
-        Current = new MediaPacket(currentPacketStream, streamData, currentIsKeyFrame);
+
+        Current = (currentPacketStream == 0)
+            ? new VideoPacket(currentPacketStream, streamData, currentIsKeyFrame)
+            : new AudioPacket(currentPacketStream, currentPacketStream - 1, streamData, currentIsKeyFrame);
 
         currentPacketStream++;
         return true;

@@ -1,7 +1,6 @@
 ﻿namespace PlayMobic.Video;
 
 using System;
-using System.Drawing;
 
 public class FrameYuv420
 {
