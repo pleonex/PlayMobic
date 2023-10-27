@@ -39,7 +39,7 @@ ends on a full byte. Each frame consists on:
 
 - If index is 6: [macroblock](#macroblock) data without coefficient
 - If index is 7: [macroblock](#macroblock) data with coefficients
-- Otherwise: [motion predicted macroblock](#motion-prediction-macroblock)
+- Otherwise: [motion predicted macroblock](#p-macroblock)
 
 ## MacroBlock
 

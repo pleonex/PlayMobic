@@ -10,8 +10,8 @@ _Documentation, library and tool to analyze and decode MODS video files._
 ## Features
 
 - 📃 Documentation of the video format.
-  - [MODS container](docs/articles/specs/container-MODS.md)
-  - [Mobiclip codec](docs/articles/specs/codec-mobiclip.md)
+  - [MODS container](articles/specs/container-MODS.md)
+  - [Mobiclip codec](articles/specs/codec-mobiclip.md)
 - 📚 .NET library that supports the video format:
   - Deserialization of the MODS container
   - MODS demuxer
@@ -27,20 +27,3 @@ implementation work of the following projects:
 
 - Gericom: [MobiclipDecoder](https://github.com/Gericom/MobiclipDecoder).
 - Adib Surani: [Mobius](https://github.com/AdibSurani/Mobius).
-
-## Roadmap
-
-- [x] Document container format
-- [x] Implement container format and demuxer
-- [ ] Document video codec ([#1](https://github.com/pleonex/PlayMobic/issues/1))
-- [ ] Implement video decoder
-      ([#2](https://github.com/pleonex/PlayMobic/issues/2))
-- [ ] Implement audio decoders
-      ([#4](https://github.com/pleonex/PlayMobic/issues/4))
-  - [ ] IMA-ADPCM
-  - [ ] DSP-ADPCM
-  - [ ] FastAudio
-  - [ ] Raw PCM16
-- [ ] Implement IMA-ADPCM audio encoder
-- [ ] Implement video encoder
-      ([#3](https://github.com/pleonex/PlayMobic/issues/3)) 😮 😕

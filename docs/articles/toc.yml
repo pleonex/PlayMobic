@@ -1,0 +1,23 @@
+- name: 🏡 Introduction
+  href: ../index.md
+- name: 🆕 Changelog
+  href: changelog.md
+
+- name: 🔧 PlayMobic tool
+- name: 🚧 Usage
+  href: tools/usage.md
+
+- name: 📃 Specification
+- name: Container - MODS
+  href: specs/container-MODS.md
+- name: Codec video - Mobiclip
+  href: specs/codec-mobiclip.md
+- name: Codec video - Mobiclip binary format
+  href: specs/codec-mobiclip-binary.md
+- name: ℹ️ References
+  href: references.md
+
+- name: 🧑‍💻 .NET library
+- name: 🚧 MODS decoder
+  href: dev/mods-decoder.md
+
