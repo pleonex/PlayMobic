@@ -34,7 +34,7 @@ jobs:
       - name: "Build, test and bundle"
         run: |
           dotnet tool restore
-          dotnet script build.csx --isolated-load-context -- --target=CI-Build --configuration=Release
+          dotnet script build.csx --isolated-load-context -- --target=CI-Build --configuration=Release --verbosity=Diagnostic
         env:
           GITHUB_TOKEN: ${{ secrets.GITHUB_TOKEN }}
 
@@ -73,7 +73,7 @@ jobs:
       - name: "Build, test and bundle"
         run: |
           dotnet tool restore
-          dotnet script build.csx --isolated-load-context -- --target=Default --configuration=Release
+          dotnet script build.csx --isolated-load-context -- --target=Default --configuration=Release --verbosity=Diagnostic
         env:
           GITHUB_TOKEN: ${{ secrets.GITHUB_TOKEN }}
 
