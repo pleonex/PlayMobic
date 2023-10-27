@@ -3,7 +3,7 @@
 using System;
 using System.Drawing;
 
-public readonly struct PixelBlock
+internal readonly struct PixelBlock
 {
     public PixelBlock(Memory<byte> data, int stride, Rectangle rect, int index)
     {
@@ -31,6 +31,17 @@ public readonly struct PixelBlock
 
     public int Index { get; }
 
+    public byte this[int x, int y] {
+        get {
+            int fullIdx = ((Y + y) * Stride) + X + x;
+            return Data.Span[fullIdx];
+        }
+        set {
+            int fullIdx = ((Y + y) * Stride) + X + x;
+            Data.Span[fullIdx] = value;
+        }
+    }
+
     public readonly PixelBlock[] Partition(int blockWidth, int blockHeight)
     {
         if ((Width % blockWidth) != 0 || (Height % blockHeight) != 0) {
@@ -56,16 +67,5 @@ public readonly struct PixelBlock
         }
 
         return blocks;
-    }
-
-    public byte this[int x, int y] {
-        get {
-            int fullIdx = ((Y + y) * Stride) + X + x;
-            return Data.Span[fullIdx];
-        }
-        set {
-            int fullIdx = ((Y + y) * Stride) + X + x;
-            Data.Span[fullIdx] = value;
-        }
     }
 }

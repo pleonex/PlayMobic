@@ -30,7 +30,7 @@ public class RawPcm162BinaryWav : IConverter<IBinary, BinaryFormat>
 
         // Sub-chunk 'fmt'
         writer.Write("fmt ", nullTerminator: false);
-        writer.Write((uint)16);             // Sub-chunk size
+        writer.Write(16);             // Sub-chunk size
         writer.Write((ushort)1);    // Audio format
         writer.Write((ushort)channels);
         writer.Write(sampleRate);

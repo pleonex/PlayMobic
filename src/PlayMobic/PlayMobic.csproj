@@ -1,4 +1,4 @@
-<Project Sdk="Microsoft.NET.Sdk">
+﻿<Project Sdk="Microsoft.NET.Sdk">
 
   <PropertyGroup>
     <Description>Codec for MODS video format.</Description>
@@ -6,13 +6,17 @@
 
     <TargetFramework>net6.0</TargetFramework>
 
+    <!-- TODO: document API -->
+    <GenerateDocumentationFile>false</GenerateDocumentationFile>
+    <NoWarn>SA1600;SA1602</NoWarn>
+    
     <ImplicitUsings>enable</ImplicitUsings>
     <Nullable>enable</Nullable>
   </PropertyGroup>
 
   <ItemGroup>
     <!-- <None Include="../../docs/images/logo_128.png" Pack="true" PackagePath="$(PackageIcon)" Visible="false" /> -->
-    <None Include="../../README.md" Pack="true" PackagePath="$(PackageReadmeFile)"/>
+    <None Include="../../README.md" Pack="true" PackagePath="$(PackageReadmeFile)" />
   </ItemGroup>
 
   <ItemGroup>

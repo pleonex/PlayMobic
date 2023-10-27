@@ -1,4 +1,4 @@
-#r "nuget: Cake.Frosting.PleOps.Recipe, 0.9.0-preview.48"
+#r "nuget: Cake.Frosting.PleOps.Recipe, 0.9.0-preview.49"
 
 using Cake.Core;
 using Cake.Frosting;

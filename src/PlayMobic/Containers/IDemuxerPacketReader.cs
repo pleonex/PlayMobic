@@ -2,6 +2,6 @@
 
 using System.Collections.Generic;
 
-public interface IDemuxerPacketReader<T> : IEnumerator<T>
+public interface IDemuxerPacketReader<out T> : IEnumerator<T>
 {
 }

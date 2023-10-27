@@ -12,7 +12,7 @@ public class ModsInfo
 
     public int FramesCount { get; set; }
 
-    public TimeSpan Duration => TimeSpan.FromSeconds(FramesCount / (double)FramesPerSecond);
+    public TimeSpan Duration => TimeSpan.FromSeconds(FramesCount / FramesPerSecond);
 
     public int Width { get; set; }
 

@@ -13,6 +13,13 @@ public abstract record MediaPacket(int StreamIndex, Stream Data, bool IsKeyFrame
     public void Dispose()
     {
         GC.SuppressFinalize(this);
-        Data?.Dispose();
+        Dispose(true);
+    }
+
+    protected virtual void Dispose(bool disposing)
+    {
+        if (disposing) {
+            Data?.Dispose();
+        }
     }
 }
