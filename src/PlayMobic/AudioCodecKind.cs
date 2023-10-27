@@ -7,5 +7,5 @@ public enum AudioCodecKind
     DspAdPcm,
     FastAudio,
     ImaAdPcm,
-    RawPcm16
+    RawPcm16,
 }

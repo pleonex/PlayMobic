@@ -35,8 +35,8 @@ internal class FrameYuv420Tests
     {
         var frame = new FrameYuv420(256, 192);
 
-        frame.U.Data.Span[0] = 0x01;
-        frame.U.Data.Span[^1] = 0x02;
+        frame.ChromaU.Data.Span[0] = 0x01;
+        frame.ChromaU.Data.Span[^1] = 0x02;
 
         int fullFirstIdx = 256 * 192;
         int fullLastIdx = fullFirstIdx + (256 * 192 / 2) - 1;
@@ -51,8 +51,8 @@ internal class FrameYuv420Tests
     {
         var frame = new FrameYuv420(256, 192);
 
-        frame.V.Data.Span[0] = 0x01;
-        frame.V.Data.Span[^1] = 0x02;
+        frame.ChromaV.Data.Span[0] = 0x01;
+        frame.ChromaV.Data.Span[^1] = 0x02;
 
         int fullFirstIdx = (256 * 192) + (256 * 192 / 2);
         int fullLastIdx = fullFirstIdx + (256 * 192 / 2) - 1;
@@ -69,9 +69,9 @@ internal class FrameYuv420Tests
         var cleanBuffer = new byte[frame.PackedData.Length];
 
         frame.Luma.Data.Span[3] = 0xCA;
-        frame.U.Data.Span[5] = 0xFE;
-        frame.V.Data.Span[8] = 0xC0;
-        frame.V.Data.Span[42] = 0xC0;
+        frame.ChromaU.Data.Span[5] = 0xFE;
+        frame.ChromaV.Data.Span[8] = 0xC0;
+        frame.ChromaV.Data.Span[42] = 0xC0;
         Assert.That(frame.PackedData.ToArray(), Is.Not.EquivalentTo(cleanBuffer));
 
         frame.CleanData();
@@ -92,12 +92,29 @@ internal class FrameYuv420Tests
         lumaBlock[1, 1] = 42;
         Assert.That(frame.PackedData[lumaIndex], Is.EqualTo(42));
 
-        PixelBlock uBlock = frame.U.Partition(16, 16)[1].Partition(2, 2)[2];
+        PixelBlock uBlock = frame.ChromaU.Partition(16, 16)[1].Partition(2, 2)[2];
         uBlock[1, 1] = 0xCA;
         Assert.That(frame.PackedData[startU + uvIndex], Is.EqualTo(0xCA));
 
-        PixelBlock vBlock = frame.V.Partition(16, 16)[1].Partition(2, 2)[2];
+        PixelBlock vBlock = frame.ChromaV.Partition(16, 16)[1].Partition(2, 2)[2];
         vBlock[1, 1] = 0xFE;
         Assert.That(frame.PackedData[startV + uvIndex], Is.EqualTo(0xFE));
+    }
+
+    [Test]
+    public void MacroBlocksOfExpectedSize()
+    {
+        var frame = new FrameYuv420(256, 192);
+        const int numMacroBlocks = 256 / 16 * (192 / 16);
+
+        MacroBlock[] macroBlocks = frame.GetMacroBlocks();
+
+        Assert.That(macroBlocks.Length, Is.EqualTo(numMacroBlocks));
+
+        Assert.Multiple(() => {
+            Assert.That(macroBlocks[3].Luma.Index, Is.EqualTo(3));
+            Assert.That(macroBlocks[3].ChromaU.Index, Is.EqualTo(3));
+            Assert.That(macroBlocks[3].ChromaV.Index, Is.EqualTo(3));
+        });
     }
 }

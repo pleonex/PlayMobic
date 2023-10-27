@@ -6,6 +6,7 @@ using PlayMobic.Video;
 [TestFixture]
 public class PixelBlockTests
 {
+#pragma warning disable SA1137 // Elements should have the same indentation
     // I know we could generate it, but it helps as a visual guide.
     private static readonly byte[] Block4x4 = new byte[4 * 4] {
          0,  1,  2,  3,
@@ -23,6 +24,7 @@ public class PixelBlockTests
         48, 49, 50, 51, 52, 53, 54, 55,
         56, 57, 58, 59, 60, 61, 62, 63,
     };
+#pragma warning restore SA1137
 
     [Test]
     public void ConstructorSetProperties()
@@ -145,6 +147,9 @@ public class PixelBlockTests
     public void PartitionNotMultipleThrows()
     {
         var block = new PixelBlock(Block4x4.ToArray(), 4, new Rectangle(0, 0, 4, 4), 0);
-        Assert.That(() => block.Partition(2, 3), Throws.ArgumentException);
+        Assert.Multiple(() => {
+            Assert.That(() => block.Partition(2, 3), Throws.ArgumentException);
+            Assert.That(() => block.Partition(3, 2), Throws.ArgumentException);
+        });
     }
 }
