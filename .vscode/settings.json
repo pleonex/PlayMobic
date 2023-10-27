@@ -13,6 +13,8 @@
         "editor.formatOnType": true
     },
     "cSpell.words": [
-        "demuxer"
+        "demuxer",
+        "macroblock",
+        "macroblocks"
     ]
 }

@@ -43,15 +43,16 @@ ends on a full byte. Each frame consists on:
 
 ## MacroBlock
 
-| Bits | Type       | Description                                            |
-| ---- | ---------- | ------------------------------------------------------ |
-| 1    | bool       | Has _P_ (I also??) mode prediction                     |
-| ...  | Exp-Golomb | Block 8x8 coefficient table index                      |
-| (3)  | int        | **Only** if it does not have P mode prediction: P mode |
-| ...  | Block[]    | For each 4x4 block in Luma macroblock: data            |
-| 3    | int        | P mode for UV                                          |
-| ...  | Block      | U block data                                           |
-| ...  | Block      | V block data                                           |
+| Bits | Type       | Description                                                         |
+| ---- | ---------- | ------------------------------------------------------------------- |
+| 1    | bool       | (**Only for I macroblocks**) Has macroblock level _prediction mode_ |
+| ...  | Exp-Golomb | Block 8x8 residual information table index                          |
+| (3)  | int        | **Only** if it has _macroblock level pMode_: pMode                  |
+| ...  | Exp-Golomb | **Only** if _macroblock level pMode_ is 2: mode 2 average           |
+| ...  | Block[]    | 8x8 blocks in Luma macroblock                                       |
+| 3    | int        | P mode for UV                                                       |
+| ...  | Block      | U block data                                                        |
+| ...  | Block      | V block data                                                        |
 
 ## P MacroBlock
 
@@ -79,35 +80,39 @@ ends on a full byte. Each frame consists on:
 
 ## Block
 
-If it doesn't have coefficient: no more data for the block, fully predicted.
+If the 8x8 block does **not** have residual:
 
-| Bits | Type       | Description                                              |
-| ---- | ---------- | -------------------------------------------------------- |
-| ...  | Exp-Golomb | Block 4x4 coefficient table index                        |
-| ...  | Intra[]    | For each block (or only one), data from intra prediction |
+| Bits | Type            | Description                                                  |
+| ---- | --------------- | ------------------------------------------------------------ |
+| ...  | pModePrediction | **Only** if it does not have _macroblock level pMode_: pMode |
+| ...  | Exp-Golomb      | **Only** if _macroblock level pMode_ is 2: mode 2 average    |
 
-If coefficient table index is 0: run predict intra for block. Otherwise split in
-4x4 blocks
+Otherwise, **there is 1 _exp-golomb_ value** with the index to the _block 4x4
+residual info table_. If this index is 0, then we process as a single 8x8 block.
+Otherwise we split further into 4x4 pixel blocks. For each of them (single or
+multiple):
+
+| Bits | Type            | Description                                               |
+| ---- | --------------- | --------------------------------------------------------- |
+| ...  | pModePrediction | **Only** it does NOT have _macroblock level pMode_: pMode |
+| ...  | Exp-Golomb      | **Only** previous pMode is 2: mode 2 average              |
+| ...  | Residual        | Residual information                                      |
 
 ## P block
 
-| Bits | Type           | Description                                              |
-| ---- | -------------- | -------------------------------------------------------- |
-| ...  | Exp-Golomb     | P frame coefficient 4x4 table index                      |
-| ...  | Coefficients[] | Coefficients for each 4x4 block or full block if index 0 |
+| Bits | Type       | Description                                              |
+| ---- | ---------- | -------------------------------------------------------- |
+| ...  | Exp-Golomb | P frame coefficient 4x4 table index                      |
+| ...  | Residual[] | Coefficients for each 4x4 block or full block if index 0 |
 
-## Intra prediction
+## pMode prediction
 
-First, if _P mode prediction_, read P mode:
+| Bits | Type | Description            |
+| ---- | ---- | ---------------------- |
+| 1    | bool | Has encoded value      |
+| 3    | int  | if above is 0, X value |
 
-| Bits | Type | Description       |
-| ---- | ---- | ----------------- |
-| 1    | bool | Has encoded value |
-| 3    | int  | X value           |
-
-Then if we need to add coefficient, read them.
-
-## Coefficients
+## Residual
 
 | Bits | Type  | Description                            |
 | ---- | ----- | -------------------------------------- |
