@@ -38,25 +38,11 @@ public class MobiclipDecoder : IVideoDecoder
         frames.Rotate();
         frames.Current.CleanData();
 
-        // Create the macroblocks: luma 16x16, chroma 8x8 (same amount)
-        MacroBlock[] macroBlocks = frames.Current.GetMacroBlocks();
-
         int frameKind = reader.Read(1);
         if (frameKind == 0) {
-            // Decode I frame
-            int colorSpaceKind = reader.Read(1);
-            colorSpace = (colorSpaceKind == 0) ? YuvColorSpace.YCoCg : YuvColorSpace.YCbCr;
-
-            int dctTableIndex = reader.Read(1);
-            int quantizerIndex = reader.Read(6);
-            // TODO: Setup quantizer
-
-            foreach (MacroBlock macroBlock in macroBlocks) {
-                bool predictPMode = reader.ReadBoolean();
-                // TODO: Run IntraFrame prediction decoder
-            }
+            DecodeIFrame(reader);
         } else {
-            // Decode P frame
+            DecodePFrame(reader);
         }
 
         if (colorSpace is YuvColorSpace.YCoCg) {
@@ -64,5 +50,28 @@ public class MobiclipDecoder : IVideoDecoder
         }
 
         return frames.Current;
+    }
+
+    private void DecodeIFrame(BitReader reader)
+    {
+        int colorSpaceKind = reader.Read(1);
+        colorSpace = (colorSpaceKind == 0) ? YuvColorSpace.YCoCg : YuvColorSpace.YCbCr;
+
+        int dctTableIndex = reader.Read(1);
+        int quantizerIndex = reader.Read(6);
+
+        // Create the macroblocks: luma 16x16, chroma 8x8 and decode each of them.
+        MacroBlock[] macroBlocks = frames.Current.GetMacroBlocks();
+
+        var intraDecoder = new IntraDecoder(reader, dctTableIndex, quantizerIndex);
+        foreach (MacroBlock macroBlock in macroBlocks) {
+            bool modePerBlock = reader.ReadBoolean();
+            intraDecoder.DecodeMacroBlock(macroBlock, modePerBlock);
+        }
+    }
+
+    private void DecodePFrame(BitReader reader)
+    {
+        throw new NotImplementedException();
     }
 }

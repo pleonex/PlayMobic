@@ -58,7 +58,7 @@ public class BitReader
         return Read(length) != 0;
     }
 
-    public long ReadEliasGammaCode()
+    public int ReadEliasGammaCode()
     {
         int n = 0;
 
@@ -71,14 +71,14 @@ public class BitReader
         return (1 << n) + Read(n);
     }
 
-    public long ReadExpGolomb()
+    public int ReadExpGolomb()
     {
         return ReadEliasGammaCode() - 1;
     }
 
-    public long ReadExpGolombSigned()
+    public int ReadExpGolombSigned()
     {
-        long value = ReadExpGolomb();
+        int value = ReadExpGolomb();
         return (value % 2) == 0
             ? -(value / 2)
             : (value / 2) + 1;
