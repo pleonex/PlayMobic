@@ -73,6 +73,27 @@ public class PixelBlockTests
     }
 
     [Test]
+    public void IndexerChildNeighbors()
+    {
+        var block = new PixelBlock(Block4x4.ToArray(), 4, new Rectangle(1, 1, 2, 2), 0);
+
+        Assert.Multiple(() => {
+            Assert.That(block[-1, 0], Is.EqualTo(4));
+            Assert.That(block[-1, 1], Is.EqualTo(8));
+            Assert.That(block[-1, 2], Is.EqualTo(12));
+            Assert.That(block[0, 2], Is.EqualTo(13));
+            Assert.That(block[1, 2], Is.EqualTo(14));
+            Assert.That(block[2, 2], Is.EqualTo(15));
+            Assert.That(block[2, 1], Is.EqualTo(11));
+            Assert.That(block[2, 0], Is.EqualTo(7));
+            Assert.That(block[2, -1], Is.EqualTo(3));
+            Assert.That(block[1, -1], Is.EqualTo(2));
+            Assert.That(block[0, -1], Is.EqualTo(1));
+            Assert.That(block[-1, -1], Is.EqualTo(0));
+        });
+    }
+
+    [Test]
     public void PartitionOnceSameSides()
     {
         var blockRect = new Rectangle(0, 0, 8, 8);

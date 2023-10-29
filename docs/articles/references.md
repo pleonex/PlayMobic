@@ -14,6 +14,7 @@ the following resources to get you started.
 - Learning of referenced codec H.264
   - [Introduction to H.264 encoding](https://www.gumlet.com/learn/what-is-h264/)
   - [High-level info with quantization and decoder](https://www.vcodex.com/an-overview-of-h264-advanced-video-coding/)
+  - [Intra-frame prediction modes](https://www.vcodex.com/h264avc-intra-precition/)
   - [Video detailing encoding process of H.264](https://www.youtube.com/watch?v=ZXXDXZfEcAQ)
   - [Additional high-level info on the layers: VCL and NAL](https://membrane.stream/learn/h264)
   - [Detailed overview of the H.264 codec](http://ip.hhi.de/imagecom_G1/assets/pdfs/csvt_overview_0305.pdf)

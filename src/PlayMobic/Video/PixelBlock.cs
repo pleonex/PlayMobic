@@ -42,6 +42,15 @@ internal readonly struct PixelBlock
         }
     }
 
+    public IEnumerable<(int x, int y)> Iterate()
+    {
+        for (int y = 0; y < Height; y++) {
+            for (int x = 0; x < Width; x++) {
+                yield return ValueTuple.Create(x, y);
+            }
+        }
+    }
+
     public readonly PixelBlock[] Partition(int blockWidth, int blockHeight)
     {
         if ((Width % blockWidth) != 0 || (Height % blockHeight) != 0) {
