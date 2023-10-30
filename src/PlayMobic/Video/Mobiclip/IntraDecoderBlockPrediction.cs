@@ -9,10 +9,16 @@ internal class IntraDecoderBlockPrediction : IIntraDecoderBlockPrediction
     private const int BitDepth = 8;
 
     private readonly BitReader reader;
+    private readonly int[] blockModes;
 
     public IntraDecoderBlockPrediction(BitReader reader)
     {
         this.reader = reader ?? throw new ArgumentNullException(nameof(reader));
+
+        // We store the mode of each 8x8 or 4x4 block to use it to predict others.
+        // We set the array to the max capacity (16x16 macroblock has 16 4x4 blocks).
+        // If we are processing a 8x8 block, we will have some unused items.
+        blockModes = new int[16];
     }
 
     public void PerformBlockPrediction(PixelBlock block, IntraPredictionBlockMode mode)
@@ -69,9 +75,43 @@ internal class IntraDecoderBlockPrediction : IIntraDecoderBlockPrediction
 
     internal IntraPredictionBlockMode DecodeBlockMode(PixelBlock block)
     {
-        // As mode from neighbor blocks are highly correlated, it saves some bits
-        // by calculating the most probable mode: H.264 8.3.1.1
-        throw new NotImplementedException();
+        // As the mode from neighbor blocks are highly correlated, the encoder
+        // saves some bits by calculating the most probable mode: H.264 8.3.1.1
+        // This is computed as the minimum value between our neighbor blocks:
+        // the mode of the block above and the mode of the block to the left.
+        // This is reset for each macroblock (not slice as H.264).
+        // If we are in the top row or left row of the macroblock, ignore the
+        // non-existing neighbor. If there aren't neighbors (block 0,0) use DC.
+        // DC is the only mode that won't require neighbor pixels either.
+        int blocksPerRow = 16 / block.Width;
+        int aboveBlockIdx = block.Index - blocksPerRow;
+        int leftBlockIdx = block.Index - 1;
+
+        int predictedMode;
+        if (aboveBlockIdx < 0 && leftBlockIdx < 0) {
+            predictedMode = (int)IntraPredictionBlockMode.DC;
+        } else if (aboveBlockIdx < 0) {
+            predictedMode = blockModes[leftBlockIdx];
+        } else if (leftBlockIdx < 0) {
+            predictedMode = blockModes[aboveBlockIdx];
+        } else {
+            predictedMode = Math.Min(blockModes[leftBlockIdx], blockModes[aboveBlockIdx]);
+        }
+
+        // Encoder sets a flag to tell us if we got it right
+        int useMostProbableMode = reader.Read(1);
+        if (useMostProbableMode == 0) {
+            int remainingModeSelector = reader.Read(3);
+
+            // H.264 trick to use 8 values (3 bits) to encode 9 values (4 bits) saving 1 bit.
+            predictedMode = (remainingModeSelector < predictedMode)
+                ? remainingModeSelector
+                : remainingModeSelector + 1;
+        }
+
+        blockModes[block.Index] = predictedMode;
+
+        return (IntraPredictionBlockMode)predictedMode;
     }
 
     private static void PredictionVertical(PixelBlock block)

@@ -4,6 +4,7 @@ internal enum IntraPredictionBlockMode
 {
     Predicted = -1,
 
+    // sorted as most probably neighbor mode for prediction
     Vertical = 0,
     Horizontal = 1,
     DeltaPlane = 2,
