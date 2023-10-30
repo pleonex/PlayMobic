@@ -33,6 +33,15 @@ internal readonly struct PixelBlock
 
     public byte this[int x, int y] {
         get {
+            // 1 neighbor pixel from left and 2 times width top is allowed.
+            if ((x < 0 && X == 0) || (x < -1) || (x >= Width && y != -1) || (x >= Width * 2)) {
+                throw new ArgumentOutOfRangeException(nameof(x));
+            }
+
+            if ((y < 0 && Y == 0) || (y < -1) || (y >= Height)) {
+                throw new ArgumentOutOfRangeException(nameof(y));
+            }
+
             int fullIdx = ((Y + y) * Stride) + X + x;
             return Data.Span[fullIdx];
         }

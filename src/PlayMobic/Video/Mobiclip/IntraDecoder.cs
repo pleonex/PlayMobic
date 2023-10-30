@@ -52,7 +52,7 @@ internal class IntraDecoder
     private readonly int quantizerIndex;
 
     public IntraDecoder(BitReader reader, int dctTableIndex, int quantizerIndex)
-    : this(reader, dctTableIndex, quantizerIndex, new IntraDecoderBlockPrediction())
+    : this(reader, dctTableIndex, quantizerIndex, new IntraDecoderBlockPrediction(reader))
     {
     }
 
