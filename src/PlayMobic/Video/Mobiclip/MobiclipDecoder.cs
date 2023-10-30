@@ -34,7 +34,8 @@ public class MobiclipDecoder : IVideoDecoder
         ArgumentNullException.ThrowIfNull(data);
         var reader = new BitReader(data, EndiannessMode.LittleEndian);
 
-        // Rotate to put last frame the first in the buffer.
+        // There is a buffer of 6 frames (0 is the current to decode), so P-prediction decode using previous 5 frames.
+        // At the beginning we rotate the buffer so the last decoded frame becomes the first on the buffer.
         frames.Rotate();
         frames.Current.CleanData();
 
@@ -54,6 +55,7 @@ public class MobiclipDecoder : IVideoDecoder
 
     private void DecodeIFrame(BitReader reader)
     {
+        // Color space for I (and following P) frames.
         int colorSpaceKind = reader.Read(1);
         colorSpace = (colorSpaceKind == 0) ? YuvColorSpace.YCoCg : YuvColorSpace.YCbCr;
 
