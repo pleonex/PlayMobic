@@ -17,6 +17,8 @@
   <ItemGroup>
     <!-- <None Include="../../docs/images/logo_128.png" Pack="true" PackagePath="$(PackageIcon)" Visible="false" /> -->
     <None Include="../../README.md" Pack="true" PackagePath="$(PackageReadmeFile)" />
+
+    <EmbeddedResource Include="Video/Mobiclip/huffman*.bin" Visible="False" />
   </ItemGroup>
 
   <ItemGroup>

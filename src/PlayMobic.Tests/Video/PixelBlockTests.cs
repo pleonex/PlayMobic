@@ -83,6 +83,7 @@ public class PixelBlockTests
             Assert.That(block[1, -1], Is.EqualTo(2));
             Assert.That(block[0, -1], Is.EqualTo(1));
             Assert.That(block[-1, -1], Is.EqualTo(0));
+            Assert.That(block[2, -1], Is.EqualTo(3));
         });
 
         // Right and bottom neightbors are not allowed
@@ -93,7 +94,6 @@ public class PixelBlockTests
             Assert.That(() => block[2, 2], Throws.InstanceOf<ArgumentOutOfRangeException>());
             Assert.That(() => block[2, 1], Throws.InstanceOf<ArgumentOutOfRangeException>());
             Assert.That(() => block[2, 0], Throws.InstanceOf<ArgumentOutOfRangeException>());
-            Assert.That(() => block[2, -1], Throws.InstanceOf<ArgumentOutOfRangeException>());
         });
     }
 
