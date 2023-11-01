@@ -165,13 +165,13 @@ internal class IntraDecoder
         quantization.Dequantize(coefficients);
 
         // 3. Apply inverse DCT to decode
-        dct.InverseTransformation(coefficients);
+        int[] residual = dct.InverseTransformation(coefficients, block.Width);
 
         // 4. Sum the residual to the predicted colors in the block.
         for (int y = 0; y < block.Height; y++) {
             for (int x = 0; x < block.Width; x++) {
                 int idx = x + (y * block.Width);
-                block[x, y] = (byte)Math.Clamp(block[x, y] + coefficients[idx], byte.MinValue, byte.MaxValue);
+                block[x, y] = (byte)Math.Clamp(block[x, y] + residual[idx], byte.MinValue, byte.MaxValue);
             }
         }
     }
