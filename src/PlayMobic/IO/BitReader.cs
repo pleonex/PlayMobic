@@ -7,18 +7,26 @@ public class BitReader
 {
     private const int MaxLength = 32 + 8;
 
+    private readonly DataReader reader;
+    private readonly int blockSize;
     private ulong buffer;
     private int bufferLength;
 
     public BitReader(Stream stream, EndiannessMode endianness)
+        : this(stream, endianness, 8)
+    {
+    }
+
+    public BitReader(Stream stream, EndiannessMode endianness, int blockSize)
     {
         ArgumentNullException.ThrowIfNull(stream);
 
-        Stream = stream as DataStream ?? new DataStream(stream, 0, stream.Length, false);
+        reader = new DataReader(stream) { Endianness = endianness };
         Endianness = endianness;
+        this.blockSize = blockSize;
     }
 
-    public DataStream Stream { get; }
+    public DataStream Stream => reader.Stream;
 
     public EndiannessMode Endianness { get; }
 
@@ -49,8 +57,15 @@ public class BitReader
 
     public int ReadSigned(int length)
     {
-        int sign = (Read(1) == 1) ? -1 : 1;
-        return Read(length - 1) * sign;
+        int sign = (Read(1) == 1) ? -1 : 0;
+        sign <<= length - 1;
+
+        // We can't multiply because it would do two's complement, we just want
+        // to set all bits to 1. Shifting a SIGNED int will do that
+        int value = Read(length - 1);
+        value |= sign;
+
+        return value;
     }
 
     public bool ReadBoolean(int length = 1)
@@ -92,22 +107,24 @@ public class BitReader
 
         int missingBits = length - bufferLength;
         while (missingBits > 0) {
-            int newData = Stream.ReadByte();
-            if (newData == -1) {
-                throw new EndOfStreamException();
-            }
+            uint newData = blockSize switch {
+                8 => reader.ReadByte(),
+                16 => reader.ReadUInt16(),
+                32 => reader.ReadUInt32(),
+                _ => throw new NotSupportedException("Unsupported block size"),
+            };
 
             if (Endianness == EndiannessMode.LittleEndian) {
-                buffer = (buffer << 8) | (uint)newData;
+                buffer = (buffer << blockSize) | newData;
             } else if (Endianness == EndiannessMode.BigEndian) {
-                int shift = MaxLength - bufferLength - 8;
-                buffer |= (uint)(newData << shift);
+                int shift = MaxLength - bufferLength - blockSize;
+                buffer |= newData << shift;
             } else {
                 throw new NotSupportedException();
             }
 
-            bufferLength += 8;
-            missingBits -= 8;
+            bufferLength += blockSize;
+            missingBits -= blockSize;
         }
     }
 }

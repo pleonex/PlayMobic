@@ -32,7 +32,7 @@ public class MobiclipDecoder : IVideoDecoder
     public FrameYuv420 DecodeFrame(Stream data)
     {
         ArgumentNullException.ThrowIfNull(data);
-        var reader = new BitReader(data, EndiannessMode.LittleEndian);
+        var reader = new BitReader(data, EndiannessMode.LittleEndian, 16);
 
         // There is a buffer of 6 frames (0 is the current to decode), so P-prediction decode using previous 5 frames.
         // At the beginning we rotate the buffer so the last decoded frame becomes the first on the buffer.
@@ -40,7 +40,7 @@ public class MobiclipDecoder : IVideoDecoder
         frames.Current.CleanData();
 
         int frameKind = reader.Read(1);
-        if (frameKind == 0) {
+        if (frameKind == 1) {
             DecodeIFrame(reader);
         } else {
             DecodePFrame(reader);

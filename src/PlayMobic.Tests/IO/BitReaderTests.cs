@@ -54,6 +54,16 @@ internal class BitReaderTests
     }
 
     [Test]
+    public void ReadConsumesExpectedByte16()
+    {
+        using Stream stream = CreateStream(0xFE, 0xCA, 0xC0, 0xC0);
+        var reader = new BitReader(stream, EndiannessMode.LittleEndian, 16);
+
+        _ = reader.Read(2);
+        Assert.That(stream.Position, Is.EqualTo(2));
+    }
+
+    [Test]
     public void ReadWithSmallerBufferConsumesMoreBytes()
     {
         using Stream stream = CreateStream(0xCA, 0xFE);
@@ -64,6 +74,19 @@ internal class BitReaderTests
 
         _ = reader.Read(10);
         Assert.That(stream.Position, Is.EqualTo(2));
+    }
+
+    [Test]
+    public void ReadWithSmallerBufferConsumesMoreBytes16()
+    {
+        using Stream stream = CreateStream(0xCA, 0xFE, 0xC0, 0xC0, 0xA0);
+        var reader = new BitReader(stream, EndiannessMode.LittleEndian, 16);
+
+        _ = reader.Read(10);
+        Assert.That(stream.Position, Is.EqualTo(2));
+
+        _ = reader.Read(10);
+        Assert.That(stream.Position, Is.EqualTo(4));
     }
 
     [Test]
@@ -89,7 +112,7 @@ internal class BitReaderTests
     }
 
     [Test(Description = "Testing if it reads well values in buffer")]
-    public void ReadInByteIsCorrectLE()
+    public void ReadInside8BitsBlockIsCorrectLE()
     {
         using Stream stream = CreateStream(0xCA, 0xFE);
         var reader = new BitReader(stream, EndiannessMode.LittleEndian);
@@ -106,8 +129,26 @@ internal class BitReaderTests
         });
     }
 
+    [Test]
+    public void ReadInside16BitsBlockIsCorrectLE()
+    {
+        using Stream stream = CreateStream(0xFB, 0xCA);
+        var reader = new BitReader(stream, EndiannessMode.LittleEndian, 16);
+
+        int actual1 = reader.Read(3);
+        int actual2 = reader.Read(10);
+        int actual3 = reader.Read(3);
+
+        Assert.Multiple(() => {
+            Assert.That(actual1, Is.EqualTo(6), "First");
+            Assert.That(actual2, Is.EqualTo(0x15F), "Second");
+            Assert.That(actual3, Is.EqualTo(3), "Third");
+            Assert.That(stream.Position, Is.EqualTo(2), "Position");
+        });
+    }
+
     [Test(Description = "Testing if it mixes well bytes from stream")]
-    public void ReadCrossByteBoundaryIsCorrectLE()
+    public void ReadCrossBlockSizeBoundaryIsCorrectLE()
     {
         using Stream stream = CreateStream(0xCA, 0xFB, 0xFF);
         var reader = new BitReader(stream, EndiannessMode.LittleEndian);
@@ -125,17 +166,35 @@ internal class BitReaderTests
     }
 
     [Test]
-    public void ReadSigned()
+    public void ReadCross16BlockSizeBoundaryIsCorrectLE()
     {
-        using Stream stream = CreateStream(0x83, 0x03);
-        var reader = new BitReader(stream, EndiannessMode.LittleEndian);
+        using Stream stream = CreateStream(0xC1, 0xC0, 0x00, 0xA0);
+        var reader = new BitReader(stream, EndiannessMode.LittleEndian, 16);
 
-        int actual1 = reader.ReadSigned(8);
-        int actual2 = reader.ReadSigned(8);
+        int actual1 = reader.Read(15);
+        int actual2 = reader.Read(5);
 
         Assert.Multiple(() => {
-            Assert.That(actual1, Is.EqualTo(-3), "First");
-            Assert.That(actual2, Is.EqualTo(3), "Second");
+            Assert.That(actual1, Is.EqualTo(0x6060), "First");
+            Assert.That(actual2, Is.EqualTo(0x1A), "Second");
+            Assert.That(stream.Position, Is.EqualTo(4), "Position");
+        });
+    }
+
+    [Test]
+    public void ReadSigned()
+    {
+        using Stream stream = CreateStream(0xF9, 0xA7, 0x90);
+        var reader = new BitReader(stream, EndiannessMode.LittleEndian);
+
+        int actual1 = reader.ReadSigned(12);
+        int actual2 = reader.ReadSigned(4);
+        int actual3 = reader.ReadSigned(4);
+
+        Assert.Multiple(() => {
+            Assert.That(actual1, Is.EqualTo(-102), "First");
+            Assert.That(actual2, Is.EqualTo(7), "Second");
+            Assert.That(actual3, Is.EqualTo(-7), "Third");
         });
     }
 
