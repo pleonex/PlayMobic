@@ -10,6 +10,7 @@ EndProject
 Project("{2150E333-8FDC-42A3-9474-1A3956D46DE8}") = "Solution Items", "Solution Items", "{C0C2E349-0392-44A4-AE99-05BB68F7678E}"
 	ProjectSection(SolutionItems) = preProject
 		..\.editorconfig = ..\.editorconfig
+		..\.gitignore = ..\.gitignore
 		..\README.md = ..\README.md
 	EndProjectSection
 EndProject
@@ -22,6 +23,8 @@ Project("{2150E333-8FDC-42A3-9474-1A3956D46DE8}") = "Spec", "Spec", "{013DDC5C-E
 		..\docs\articles\specs\container-MODS.md = ..\docs\articles\specs\container-MODS.md
 		..\docs\articles\references.md = ..\docs\articles\references.md
 	EndProjectSection
+EndProject
+Project("{FAE04EC0-301F-11D3-BF4B-00C04F79EFBC}") = "PlayMobic.PerformanceTests", "PlayMobic.PerformanceTests\PlayMobic.PerformanceTests.csproj", "{D0678BDA-FDBE-47EB-96CC-C6ACE2AEDC34}"
 EndProject
 Global
 	GlobalSection(SolutionConfigurationPlatforms) = preSolution
@@ -41,6 +44,10 @@ Global
 		{F8B8C5FF-BFF6-4459-A0FA-4DFFCF91DD25}.Debug|Any CPU.Build.0 = Debug|Any CPU
 		{F8B8C5FF-BFF6-4459-A0FA-4DFFCF91DD25}.Release|Any CPU.ActiveCfg = Release|Any CPU
 		{F8B8C5FF-BFF6-4459-A0FA-4DFFCF91DD25}.Release|Any CPU.Build.0 = Release|Any CPU
+		{D0678BDA-FDBE-47EB-96CC-C6ACE2AEDC34}.Debug|Any CPU.ActiveCfg = Debug|Any CPU
+		{D0678BDA-FDBE-47EB-96CC-C6ACE2AEDC34}.Debug|Any CPU.Build.0 = Debug|Any CPU
+		{D0678BDA-FDBE-47EB-96CC-C6ACE2AEDC34}.Release|Any CPU.ActiveCfg = Release|Any CPU
+		{D0678BDA-FDBE-47EB-96CC-C6ACE2AEDC34}.Release|Any CPU.Build.0 = Release|Any CPU
 	EndGlobalSection
 	GlobalSection(SolutionProperties) = preSolution
 		HideSolutionNode = FALSE

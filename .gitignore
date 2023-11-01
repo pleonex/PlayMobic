@@ -7,6 +7,7 @@ launchSettings.json
 bin/
 obj/
 build/
+BenchmarkDotNet.Artifacts/
 
 # Test resources
 resources/
