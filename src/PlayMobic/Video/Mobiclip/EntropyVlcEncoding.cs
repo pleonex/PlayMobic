@@ -99,7 +99,7 @@ internal class EntropyVlcEncoding
         int matrixPos = 0;
         bool isBlockEnd;
         do {
-            (isBlockEnd, int run, int amplitude) = ReadRleInfo(reader);
+            (isBlockEnd, int zeroesRun, int amplitude) = ReadRleInfo(reader);
 
             // Format:
             // if amplitude is provided in first block, then use it that run and amplitude
@@ -110,34 +110,35 @@ internal class EntropyVlcEncoding
             if (amplitude != 0) {
                 // First block info contains the actual value, just get sign
                 amplitude *= reader.ReadBoolean() ? -1 : 1;
-            } else if (reader.ReadBoolean()) {
+            } else if (reader.Read(1) == 0) {
                 // Bigger amplitude: increment reading another RLE info block
-                (isBlockEnd, run, amplitude) = ReadRleInfo(reader);
+                (isBlockEnd, zeroesRun, amplitude) = ReadRleInfo(reader);
 
-                int residueIdx = run + (isBlockEnd ? 64 : 0);
+                int residueIdx = zeroesRun + (isBlockEnd ? 64 : 0);
                 amplitude += residueTable[residueIdx];
                 amplitude *= reader.ReadBoolean() ? -1 : 1;
-            } else if (reader.ReadBoolean()) {
+            } else if (reader.Read(1) == 0) {
                 // Bigger run: increment reading another RLE info block
-                (isBlockEnd, run, amplitude) = ReadRleInfo(reader);
+                (isBlockEnd, zeroesRun, amplitude) = ReadRleInfo(reader);
 
                 int residueIdx = amplitude + (isBlockEnd ? 64 : 0);
-                run += residueTable[residueIdx];
+                zeroesRun += residueTable[residueIdx];
                 amplitude *= reader.ReadBoolean() ? -1 : 1;
             } else {
                 // Cannot encoded amplitude/run in RLE info blocks, we need 17 bits
                 isBlockEnd = reader.ReadBoolean();
-                run = reader.Read(6);
+                zeroesRun = reader.Read(6);
                 amplitude = reader.ReadSigned(12);
             }
 
             // skip consecutive zeroes
-            matrixPos += run;
+            matrixPos += zeroesRun;
 
             // get the actual index after "de-zigzag"
             int targetIdx = zizagTable[matrixPos];
 
             residual[targetIdx] = amplitude;
+            matrixPos++;
         } while (!isBlockEnd);
 
         return residual;
@@ -148,7 +149,7 @@ internal class EntropyVlcEncoding
         int value = huffman.ReadCodeword(reader);
 
         // Our huffman implementation already removes the lower 4 bits with the codeword bit count.
-        bool isBlockEnd = (value & 0x800) == 1;
+        bool isBlockEnd = (value >> 11) == 1;
         int zeroRun = (value >> 5) & 0x3F;
         int amplitude = value & 0x1F;
 
