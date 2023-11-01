@@ -53,7 +53,7 @@ public sealed class ModsPacketReader : IDemuxerPacketReader<MediaPacket>
     {
         long packetOffset;
         if (currentPacketStream == -1 || currentPacketStream >= numStreamsPerFramePacket) {
-            if (currentFrame >= container.Info.FramesCount) {
+            if (currentFrame + 1 >= container.Info.FramesCount) {
                 return false;
             }
 
@@ -106,10 +106,13 @@ public sealed class ModsPacketReader : IDemuxerPacketReader<MediaPacket>
         // the key frame table, but that would be slower.
         ushort frameKind = reader.ReadUInt16();
         containerData.Position -= 2;
-        currentIsKeyFrame = frameKind >> 31 == 1;
+        currentIsKeyFrame = frameKind >> 15 == 1;
 
         currentPacketStream = 0;
         numStreamsPerFramePacket = 1 + (audioBlocksCount * container.Info.AudioChannelsCount);
         packetStream = new DataStream(containerData, containerData.Position, packetSize);
+
+        // Advance to next packet
+        containerData.Position += packetSize;
     }
 }
