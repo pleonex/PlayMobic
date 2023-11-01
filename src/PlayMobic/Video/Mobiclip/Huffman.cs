@@ -40,18 +40,25 @@ internal class Huffman
             ?? throw new FileNotFoundException("Missing huffman table");
 
         // Format is for each item:
-        // index: codeword
+        // index (13 bits max): codeword
+        // bit0-3: number of codeword bits (to clean up the index)
+        // bit4-15: value
+        // this is a trick to decode huffman via a hash table lookup (fast reads)
+        // it repeats the same value for all the variant of short codewords
+        // so for a codeword of 10 bits, it will repeat the value for all combinations
+        // of that codeword and its 3 remaining bits.
         int numItems = (int)(tableStream.Length / 2);
         var reader = new DataReader(tableStream);
 
-        var huffman = new Huffman(13);
+        const int MaxCodewordLength = 13;
+        var huffman = new Huffman(MaxCodewordLength);
 
         for (int i = 0; i < numItems; i++) {
             ushort item = reader.ReadUInt16();
 
             int bitCount = item & 0xF;
             int value = item >> 4;
-            int codeword = i >> (13 - bitCount);
+            int codeword = i >> (MaxCodewordLength - bitCount);
 
             if (bitCount == 1) {
                 // padding

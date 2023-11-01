@@ -10,11 +10,18 @@ EndProject
 Project("{2150E333-8FDC-42A3-9474-1A3956D46DE8}") = "Solution Items", "Solution Items", "{C0C2E349-0392-44A4-AE99-05BB68F7678E}"
 	ProjectSection(SolutionItems) = preProject
 		..\.editorconfig = ..\.editorconfig
-		..\docs\MODS.md = ..\docs\MODS.md
 		..\README.md = ..\README.md
 	EndProjectSection
 EndProject
-Project("{FAE04EC0-301F-11D3-BF4B-00C04F79EFBC}") = "PlayMobic.Tests", "PlayMobic.Tests\PlayMobic.Tests.csproj", "{F8B8C5FF-BFF6-4459-A0FA-4DFFCF91DD25}"
+Project("{9A19103F-16F7-4668-BE54-9A1E7A4F7556}") = "PlayMobic.Tests", "PlayMobic.Tests\PlayMobic.Tests.csproj", "{F8B8C5FF-BFF6-4459-A0FA-4DFFCF91DD25}"
+EndProject
+Project("{2150E333-8FDC-42A3-9474-1A3956D46DE8}") = "Spec", "Spec", "{013DDC5C-EED8-4A9A-860B-150F4758ACC0}"
+	ProjectSection(SolutionItems) = preProject
+		..\docs\articles\specs\codec-mobiclip-binary.md = ..\docs\articles\specs\codec-mobiclip-binary.md
+		..\docs\articles\specs\codec-mobiclip.md = ..\docs\articles\specs\codec-mobiclip.md
+		..\docs\articles\specs\container-MODS.md = ..\docs\articles\specs\container-MODS.md
+		..\docs\articles\references.md = ..\docs\articles\references.md
+	EndProjectSection
 EndProject
 Global
 	GlobalSection(SolutionConfigurationPlatforms) = preSolution
@@ -37,6 +44,9 @@ Global
 	EndGlobalSection
 	GlobalSection(SolutionProperties) = preSolution
 		HideSolutionNode = FALSE
+	EndGlobalSection
+	GlobalSection(NestedProjects) = preSolution
+		{013DDC5C-EED8-4A9A-860B-150F4758ACC0} = {C0C2E349-0392-44A4-AE99-05BB68F7678E}
 	EndGlobalSection
 	GlobalSection(ExtensibilityGlobals) = postSolution
 		SolutionGuid = {880A0F46-E7B2-4FFC-A62F-096A5C300659}

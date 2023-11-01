@@ -25,6 +25,9 @@ the following resources to get you started.
 - Video related concepts:
   - [YUV color format](https://learn.microsoft.com/en-us/windows/win32/medfound/about-yuv-video)
   - [YUV downsampling](https://learn.microsoft.com/en-us/windows/win32/medfound/recommended-8-bit-yuv-formats-for-video-rendering)
+- JPEG
+  - [JPEG lossy compression algorithm](https://cs.stanford.edu/people/eroberts/courses/soco/projects/data-compression/lossy/jpeg/algorithm.htm)
+  - [JPEG specification](https://www.w3.org/Graphics/JPEG/itu-t81.pdf)
 
 ## Mobiclip video codec
 

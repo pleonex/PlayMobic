@@ -52,25 +52,25 @@ internal class IntraDecoder
     private readonly IIntraDecoderBlockPrediction blockPrediction;
     private readonly DiscreteCosineTransformer dct;
     private readonly Quantization quantization;
-    private readonly Cavlc cavlc;
+    private readonly EntropyVlcEncoding entropyVlc;
 
-    public IntraDecoder(BitReader reader, int dctTableIndex, int quantizerIndex)
-    : this(reader, dctTableIndex, quantizerIndex, new IntraDecoderBlockPrediction(reader))
+    public IntraDecoder(BitReader reader, int vlcTableIndex, int quantizerIndex)
+    : this(reader, vlcTableIndex, quantizerIndex, new IntraDecoderBlockPrediction(reader))
     {
     }
 
     internal IntraDecoder(
         BitReader reader,
-        int dctTableIndex,
+        int vlcTableIndex,
         int quantizerIndex,
         IIntraDecoderBlockPrediction blockPrediction)
     {
         this.reader = reader ?? throw new ArgumentNullException(nameof(reader));
         this.blockPrediction = blockPrediction ?? throw new ArgumentNullException(nameof(blockPrediction));
 
-        dct = new DiscreteCosineTransformer(dctTableIndex);
+        dct = new DiscreteCosineTransformer();
         quantization = new Quantization(quantizerIndex);
-        cavlc = new Cavlc();
+        entropyVlc = new EntropyVlcEncoding(vlcTableIndex);
     }
 
     public void DecodeMacroBlock(MacroBlock macroBlock, bool lumaHasModePerSubBlocks)
@@ -158,8 +158,8 @@ internal class IntraDecoder
 
     private void ApplyResidual(PixelBlock block)
     {
-        // 1. CAVLC to get matrix
-        int[] coefficients = cavlc.DecodeResidual(reader);
+        // 1. VLC to get residual DC coefficients matrix
+        int[] coefficients = entropyVlc.DecodeResidual(reader, block.Width * block.Height);
 
         // 2. Dequantize to re-store scale
         quantization.Dequantize(coefficients);

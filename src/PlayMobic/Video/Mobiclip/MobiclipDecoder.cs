@@ -59,13 +59,13 @@ public class MobiclipDecoder : IVideoDecoder
         int colorSpaceKind = reader.Read(1);
         colorSpace = (colorSpaceKind == 0) ? YuvColorSpace.YCoCg : YuvColorSpace.YCbCr;
 
-        int dctTableIndex = reader.Read(1);
+        int vlcTableIndex = reader.Read(1);
         int quantizerIndex = reader.Read(6);
 
         // Create the macroblocks: luma 16x16, chroma 8x8 and decode each of them.
         MacroBlock[] macroBlocks = frames.Current.GetMacroBlocks();
 
-        var intraDecoder = new IntraDecoder(reader, dctTableIndex, quantizerIndex);
+        var intraDecoder = new IntraDecoder(reader, vlcTableIndex, quantizerIndex);
         foreach (MacroBlock macroBlock in macroBlocks) {
             bool modePerBlock = reader.ReadBoolean();
             intraDecoder.DecodeMacroBlock(macroBlock, modePerBlock);
