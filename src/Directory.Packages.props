@@ -2,6 +2,7 @@
   <!-- Centralize dependency management -->
   <ItemGroup>
     <PackageVersion Include="BenchmarkDotNet" Version="0.13.9" />
+    <PackageVersion Include="Texim" Version="0.1.0-preview.195" />
     <PackageVersion Include="Yarhl" Version="4.0.0-preview.221" />
     <PackageVersion Include="System.CommandLine" Version="2.0.0-beta4.22272.1" />
     <PackageVersion Include="nunit" Version="3.13.3" />

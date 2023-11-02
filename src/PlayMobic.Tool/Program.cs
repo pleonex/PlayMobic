@@ -1,15 +1,17 @@
-﻿#pragma warning disable SA1200 // False positive on top-level without namespace
-using System.CommandLine;
+﻿using System.CommandLine;
 using PlayMobic.Containers;
 using PlayMobic.Containers.Mods;
 using PlayMobic.Video;
 using PlayMobic.Video.Mobiclip;
+using Texim.Colors;
+using Texim.Formats;
+using Texim.Images;
 using Yarhl.FileSystem;
 using Yarhl.IO;
-#pragma warning restore SA1200
 
 return await new RootCommand("Tool for MODS videos") {
     SetupInfoCommand(),
+    SetupExtraFramesCommand(),
     SetupDemuxCommand(),
 }.InvokeAsync(args);
 
@@ -22,6 +24,19 @@ Command SetupInfoCommand()
     infoCommand.SetHandler(PrintInfo, fileArg);
 
     return infoCommand;
+}
+
+Command SetupExtraFramesCommand()
+{
+    var inputArg = new Option<FileInfo>("--input", "Path to the .mods file") { IsRequired = true };
+    var outputArg = new Option<string>("--output", "Path to the folder to write the frames") { IsRequired = true };
+    var command = new Command("extract-frames", "Extract each video frame into PNG images") {
+        inputArg,
+        outputArg,
+    };
+    command.SetHandler(ExtractFrames, inputArg, outputArg);
+
+    return command;
 }
 
 Command SetupDemuxCommand()
@@ -62,6 +77,45 @@ void PrintInfo(FileInfo videoFile)
     }
 }
 
+void ExtractFrames(FileInfo videoFile, string outputPath)
+{
+    Console.WriteLine("Video: {0}", videoFile.FullName);
+    Console.WriteLine("Output: {0}", outputPath);
+
+    using Node videoNode = NodeFactory.FromFile(videoFile.FullName, FileOpenMode.Read)
+        .TransformWith<Binary2Mods>();
+
+    ModsVideo video = videoNode.GetFormatAs<ModsVideo>()!;
+    ModsInfo info = video.Info;
+
+    var demuxer = new ModsDemuxer(video);
+    var videoDecoder = new MobiclipDecoder(info.Width, info.Height);
+    var image2BinaryBitmap = new FullImage2Bitmap();
+
+    // This work because video is always the first stream in the packets
+    // and we don't need to decode audio to advance to next frame.
+    foreach (MediaPacket framePacket in demuxer.ReadFrames().OfType<VideoPacket>()) {
+        if (!framePacket.IsKeyFrame) {
+            // not supported yet
+            continue;
+        }
+
+        FrameYuv420 frame = videoDecoder.DecodeFrame(framePacket.Data);
+
+        byte[] rgbFrame = ColorSpaceConverter.YCoCg2Rgb32(frame);
+        var frameImage = new FullImage(frame.Width, frame.Height) {
+            Pixels = Rgb32.Instance.Decode(rgbFrame),
+        };
+        image2BinaryBitmap.Convert(frameImage)
+            .Stream.WriteTo(Path.Combine(outputPath, $"frame{framePacket.FrameCount}.png"));
+
+        Console.Write('+');
+    }
+
+    Console.WriteLine();
+    Console.WriteLine("Done");
+}
+
 void Demux(FileInfo videoFile, string outputPath)
 {
     string videoPath = Path.Combine(outputPath, videoFile.Name + ".rawvideo");
@@ -80,13 +134,12 @@ void Demux(FileInfo videoFile, string outputPath)
 
     var demuxer = new ModsDemuxer(video);
     foreach (MediaPacket framePacket in demuxer.ReadFrames()) {
-        if (framePacket.IsKeyFrame && framePacket is VideoPacket) {
+        if (framePacket is VideoPacket) {
             FrameYuv420 frame = videoDecoder.DecodeFrame(framePacket.Data);
             videoStream.Write(frame.PackedData);
-
             Console.Write('+');
         } else {
-            Console.Write('.');
+            // TODO: decode audio
         }
     }
 
