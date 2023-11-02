@@ -75,15 +75,16 @@ public class PixelBlockTests
     [Test]
     public void IndexerChildNeighbors()
     {
-        var block = new PixelBlock(Block4x4.ToArray(), 4, new Rectangle(1, 1, 2, 2), 0);
+        var block = new PixelBlock(Block8x8.ToArray(), 8, new Rectangle(2, 2, 2, 2), 3);
 
         Assert.Multiple(() => {
-            Assert.That(block[-1, 0], Is.EqualTo(4));
-            Assert.That(block[-1, 1], Is.EqualTo(8));
-            Assert.That(block[1, -1], Is.EqualTo(2));
-            Assert.That(block[0, -1], Is.EqualTo(1));
-            Assert.That(block[-1, -1], Is.EqualTo(0));
-            Assert.That(block[2, -1], Is.EqualTo(3));
+            Assert.That(block[-1, -1], Is.EqualTo(9));
+            Assert.That(block[-1, 0], Is.EqualTo(17));
+            Assert.That(block[-1, 1], Is.EqualTo(25));
+            Assert.That(block[0, -1], Is.EqualTo(10));
+            Assert.That(block[1, -1], Is.EqualTo(11));
+            Assert.That(block[2, -1], Is.EqualTo(12));
+            Assert.That(block[3, -1], Is.EqualTo(13));
         });
 
         // Right and bottom neightbors are not allowed
@@ -94,6 +95,20 @@ public class PixelBlockTests
             Assert.That(() => block[2, 2], Throws.InstanceOf<ArgumentOutOfRangeException>());
             Assert.That(() => block[2, 1], Throws.InstanceOf<ArgumentOutOfRangeException>());
             Assert.That(() => block[2, 0], Throws.InstanceOf<ArgumentOutOfRangeException>());
+            Assert.That(() => block[4, -1], Throws.InstanceOf<ArgumentOutOfRangeException>());
+        });
+    }
+
+    [Test]
+    public void IndexerChildAtBorderNotAllowTopOrLeft()
+    {
+        var block = new PixelBlock(Block8x8.ToArray(), 8, new Rectangle(0, 0, 2, 2), 3);
+
+        Assert.Multiple(() => {
+            Assert.That(() => block[-1, -1], Throws.InstanceOf<ArgumentOutOfRangeException>());
+            Assert.That(() => block[-1, 0], Throws.InstanceOf<ArgumentOutOfRangeException>());
+            Assert.That(() => block[0, -1], Throws.InstanceOf<ArgumentOutOfRangeException>());
+            Assert.That(() => block[2, -1], Throws.InstanceOf<ArgumentOutOfRangeException>());
         });
     }
 
@@ -176,5 +191,22 @@ public class PixelBlockTests
             Assert.That(() => block.Partition(2, 3), Throws.ArgumentException);
             Assert.That(() => block.Partition(3, 2), Throws.ArgumentException);
         });
+    }
+
+    [Test]
+    public void IterateAllBlockPixels()
+    {
+        var block = new PixelBlock(Block4x4, 4, new Rectangle(2, 2, 2, 2), 3);
+
+        int count = 0;
+        foreach ((int x, int y) in block.Iterate()) {
+            Assert.Multiple(() => {
+                Assert.That(x, Is.EqualTo(count % 2));
+                Assert.That(y, Is.EqualTo(count / 2));
+            });
+            count++;
+        }
+
+        Assert.That(count, Is.EqualTo(4));
     }
 }

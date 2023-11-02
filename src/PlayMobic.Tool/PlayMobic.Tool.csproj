@@ -7,6 +7,7 @@
     <TargetFramework>net6.0</TargetFramework>
     <SelfContained>false</SelfContained>
 
+    <GenerateDocumentationFile>false</GenerateDocumentationFile>
     <ImplicitUsings>enable</ImplicitUsings>
     <Nullable>enable</Nullable>
   </PropertyGroup>

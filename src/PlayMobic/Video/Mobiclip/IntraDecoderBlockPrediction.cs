@@ -9,7 +9,7 @@ internal class IntraDecoderBlockPrediction : IIntraDecoderBlockPrediction
     private const int BitDepth = 8;
 
     private readonly BitReader reader;
-    private readonly int[] blockModes;
+    private readonly int[] prevBlockModes;
 
     public IntraDecoderBlockPrediction(BitReader reader)
     {
@@ -18,7 +18,7 @@ internal class IntraDecoderBlockPrediction : IIntraDecoderBlockPrediction
         // We store the mode of each 8x8 or 4x4 block to use it to predict others.
         // We set the array to the max capacity (16x16 macroblock has 16 4x4 blocks).
         // If we are processing a 8x8 block, we will have some unused items.
-        blockModes = new int[16];
+        prevBlockModes = new int[16];
     }
 
     public void PerformBlockPrediction(PixelBlock block, IntraPredictionBlockMode mode)
@@ -85,17 +85,17 @@ internal class IntraDecoderBlockPrediction : IIntraDecoderBlockPrediction
         // DC is the only mode that won't require neighbor pixels either.
         int blocksPerRow = 16 / block.Width;
         int aboveBlockIdx = block.Index - blocksPerRow;
-        int leftBlockIdx = block.Index - 1;
+        int leftBlockIdx = (block.X == 0) ? -1 : block.Index - 1;
 
         int predictedMode;
         if (aboveBlockIdx < 0 && leftBlockIdx < 0) {
             predictedMode = (int)IntraPredictionBlockMode.DC;
         } else if (aboveBlockIdx < 0) {
-            predictedMode = blockModes[leftBlockIdx];
+            predictedMode = prevBlockModes[leftBlockIdx];
         } else if (leftBlockIdx < 0) {
-            predictedMode = blockModes[aboveBlockIdx];
+            predictedMode = prevBlockModes[aboveBlockIdx];
         } else {
-            predictedMode = Math.Min(blockModes[leftBlockIdx], blockModes[aboveBlockIdx]);
+            predictedMode = Math.Min(prevBlockModes[leftBlockIdx], prevBlockModes[aboveBlockIdx]);
         }
 
         // Encoder sets a flag to tell us if we got it right
@@ -109,7 +109,7 @@ internal class IntraDecoderBlockPrediction : IIntraDecoderBlockPrediction
                 : remainingModeSelector + 1;
         }
 
-        blockModes[block.Index] = predictedMode;
+        prevBlockModes[block.Index] = predictedMode;
 
         return (IntraPredictionBlockMode)predictedMode;
     }
@@ -132,21 +132,23 @@ internal class IntraDecoderBlockPrediction : IIntraDecoderBlockPrediction
 
     private static void PredictionDeltaPlane(PixelBlock block, BitReader reader)
     {
+        // shift so it works at bit level
+        int SizeAdjust(int value) =>
+            (block.Width == 16) ? (value + 1) >> 1 : value;
+
         // Plane prediction with delta (similar to H.264 (8.3.3.4))
         int delta = reader.ReadExpGolombSigned();
         byte bottomMost = block[-1, block.Height - 1];
         byte rightMost = block[block.Width - 1, -1];
 
-        // TBC if it can be used for 4x4
         int shift = (block.Width == 4) ? 2 : 3;
-        int sizeAdjust = (block.Width == 16) ? 2 : 1;
 
         // In h.264: a = 16 * (p[-1, 15] + p[15, -1])
         int average = (bottomMost + rightMost + 1) / 2;
         average += 2 * delta;
 
-        int hDelta = (average - bottomMost + 1) >> sizeAdjust;
-        int vDelta = (average - rightMost + 1) >> sizeAdjust;
+        int hDelta = SizeAdjust(average - bottomMost);
+        int vDelta = SizeAdjust(average - rightMost);
 
         Span<int> hRow = stackalloc int[block.Width];
         for (int x = 0; x < hRow.Length; x++) {
@@ -154,7 +156,7 @@ internal class IntraDecoderBlockPrediction : IIntraDecoderBlockPrediction
             // then: b = ((5 * H) + 32) / 64
             hRow[x] = (x + 1) * hDelta;
             hRow[x] += (bottomMost - block[x, -1]) << shift;
-            hRow[x] = (hRow[x] + 1) >> sizeAdjust;
+            hRow[x] = SizeAdjust(hRow[x]);
         }
 
         Span<int> vColumn = stackalloc int[block.Height];
@@ -163,7 +165,7 @@ internal class IntraDecoderBlockPrediction : IIntraDecoderBlockPrediction
             // then: c = ((5 * V) + 32) / 64
             vColumn[y] = (y + 1) * vDelta;
             vColumn[y] += (rightMost - block[-1, y]) << shift;
-            vColumn[y] = (vColumn[y] + 1) >> sizeAdjust;
+            vColumn[y] = SizeAdjust(vColumn[y]);
         }
 
         foreach ((int x, int y) in block.Iterate()) {
@@ -200,7 +202,7 @@ internal class IntraDecoderBlockPrediction : IIntraDecoderBlockPrediction
                 }
             }
 
-            average = (byte)(sum / len);
+            average = (byte)((sum + (len / 2)) / len);
         }
 
         foreach ((int x, int y) in block.Iterate()) {
@@ -226,7 +228,7 @@ internal class IntraDecoderBlockPrediction : IIntraDecoderBlockPrediction
             } else if ((zHU % 2) == 0) {
                 block[x, y] = Average2LeftNeighbors(block, y + (x / 2));
             } else {
-                block[x, y] = Average3LeftNeighbors(block, y + (x / 2));
+                block[x, y] = Average3LeftNeighbors(block, y + (x / 2) + 1);
             }
         }
     }

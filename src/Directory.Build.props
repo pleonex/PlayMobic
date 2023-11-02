@@ -56,8 +56,9 @@
     <EnforceCodeStyleInBuild>true</EnforceCodeStyleInBuild>
   </PropertyGroup>
   <ItemGroup>
-    <PackageReference Include="StyleCop.Analyzers" PrivateAssets="All"/>
     <PackageReference Include="SonarAnalyzer.CSharp" PrivateAssets="All"/>
     <PackageReference Include="Roslynator.Analyzers" PrivateAssets="All"/>
+    <!-- Too many bugs with recent C# versions -->
+    <!--<PackageReference Include="StyleCop.Analyzers" PrivateAssets="All"/>-->
   </ItemGroup>
 </Project>
