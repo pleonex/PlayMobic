@@ -17,7 +17,7 @@ public class FrameYuv420
         // IMC4 (yuv420p): 8 bpp YUV 4:2:0, stride = width (for now)
         int bytesPerPixelChannel = Width * Height * (BitsPerPixel / 8);
         int lumaLength = bytesPerPixelChannel;
-        int uvLength = bytesPerPixelChannel / 2;
+        int uvLength = bytesPerPixelChannel / 4;
 
         data = new byte[lumaLength + (2 * uvLength)];
         Memory<byte> lumaData = data.AsMemory(0, lumaLength);

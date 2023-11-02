@@ -15,6 +15,20 @@ internal class FrameYuv420Tests
     }
 
     [Test]
+    public void ExpectedPackedDataLength()
+    {
+        const int width = 256;
+        const int height = 192;
+        var frame = new FrameYuv420(width, height);
+
+        int lumaLength = width * height;
+        int chromaLength = width / 2 * (height / 2);
+        int totalLength = lumaLength + (2 * chromaLength);
+
+        Assert.That(frame.PackedData.Length, Is.EqualTo(totalLength));
+    }
+
+    [Test]
     public void UnpackedDataForLumaAtCorrectIndexes()
     {
         var frame = new FrameYuv420(256, 192);
@@ -39,7 +53,7 @@ internal class FrameYuv420Tests
         frame.ChromaU.Data.Span[^1] = 0x02;
 
         int fullFirstIdx = 256 * 192;
-        int fullLastIdx = fullFirstIdx + (256 * 192 / 2) - 1;
+        int fullLastIdx = fullFirstIdx + (256 / 2 * 192 / 2) - 1;
         Assert.Multiple(() => {
             Assert.That(frame.PackedData[fullFirstIdx], Is.EqualTo(0x01));
             Assert.That(frame.PackedData[fullLastIdx], Is.EqualTo(0x02));
@@ -54,8 +68,8 @@ internal class FrameYuv420Tests
         frame.ChromaV.Data.Span[0] = 0x01;
         frame.ChromaV.Data.Span[^1] = 0x02;
 
-        int fullFirstIdx = (256 * 192) + (256 * 192 / 2);
-        int fullLastIdx = fullFirstIdx + (256 * 192 / 2) - 1;
+        int fullFirstIdx = (256 * 192) + (256 / 2 * 192 / 2);
+        int fullLastIdx = fullFirstIdx + (256 / 2 * 192 / 2) - 1;
         Assert.Multiple(() => {
             Assert.That(frame.PackedData[fullFirstIdx], Is.EqualTo(0x01));
             Assert.That(frame.PackedData[fullLastIdx], Is.EqualTo(0x02));
@@ -83,7 +97,7 @@ internal class FrameYuv420Tests
     {
         var frame = new FrameYuv420(256, 192);
         int startU = 256 * 192;
-        int startV = (256 * 192) + (256 * 192 / 2);
+        int startV = (256 * 192) + (256 / 2 * 192 / 2);
 
         int lumaIndex = (1 * 256) + 16 + (2 * 2) + 1;
         int uvIndex = (1 * 256 / 2) + 16 + (2 * 2) + 1;
