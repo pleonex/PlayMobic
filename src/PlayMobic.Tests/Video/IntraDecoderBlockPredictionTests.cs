@@ -248,59 +248,59 @@ public class IntraDecoderBlockPredictionTests
     }
 
     [Test]
-    public void ValidateModePrediction4x4()
+    public void ValidateModePrediction4x4InsideBlock()
     {
         // note: bytes are reversed due to LE.
         var decoder = CreateDecoder(0b101_1_1_1_1_0, 0b1_1_0010_1_0, 0x00, 0b011_00000);
 
         // start with DC
         Assert.That(
-            decoder.DecodeBlockMode(Create4x4EmptyBlock(0, 0)),
+            decoder.DecodeBlockMode(Create4x4EmptyBlock(0, 0, 0)),
             Is.EqualTo(IntraPredictionBlockMode.DC));
 
         // to the right copies corner
         Assert.That(
-            decoder.DecodeBlockMode(Create4x4EmptyBlock(4, 0)),
+            decoder.DecodeBlockMode(Create4x4EmptyBlock(4, 0, 1)),
             Is.EqualTo(IntraPredictionBlockMode.DC));
 
         // to the right again copies left but we correct (smaller)
         Assert.That(
-            decoder.DecodeBlockMode(Create4x4EmptyBlock(8, 0)),
+            decoder.DecodeBlockMode(Create4x4EmptyBlock(8, 0, 2)),
             Is.EqualTo(IntraPredictionBlockMode.DeltaPlane));
 
         // to the right again copies corrected value
         Assert.That(
-            decoder.DecodeBlockMode(Create4x4EmptyBlock(12, 0)),
+            decoder.DecodeBlockMode(Create4x4EmptyBlock(12, 0, 3)),
             Is.EqualTo(IntraPredictionBlockMode.DeltaPlane));
 
         // first bottom copies top but correct to bigger
         Assert.That(
-            decoder.DecodeBlockMode(Create4x4EmptyBlock(0, 4)),
+            decoder.DecodeBlockMode(Create4x4EmptyBlock(0, 4, 4)),
             Is.EqualTo(IntraPredictionBlockMode.VerticalRight));
 
         // second bottom does min top (DC) and left (VerticalRight)
         Assert.That(
-            decoder.DecodeBlockMode(Create4x4EmptyBlock(4, 4)),
+            decoder.DecodeBlockMode(Create4x4EmptyBlock(4, 4, 5)),
             Is.EqualTo(IntraPredictionBlockMode.DC));
 
         // third bottom does min top (Delta) and left (DC) -> delta
         Assert.That(
-            decoder.DecodeBlockMode(Create4x4EmptyBlock(8, 4)),
+            decoder.DecodeBlockMode(Create4x4EmptyBlock(8, 4, 6)),
             Is.EqualTo(IntraPredictionBlockMode.DeltaPlane));
 
         // forth min top (delta) and left (delta)
         Assert.That(
-            decoder.DecodeBlockMode(Create4x4EmptyBlock(12, 0)),
+            decoder.DecodeBlockMode(Create4x4EmptyBlock(12, 0, 7)),
             Is.EqualTo(IntraPredictionBlockMode.DeltaPlane));
 
         // second bottom copies top (vertical right)
         Assert.That(
-            decoder.DecodeBlockMode(Create4x4EmptyBlock(0, 8)),
+            decoder.DecodeBlockMode(Create4x4EmptyBlock(0, 8, 8)),
             Is.EqualTo(IntraPredictionBlockMode.VerticalRight));
 
         // next min left (vertical right) and top (dc) correct with equal -> +1
         Assert.That(
-            decoder.DecodeBlockMode(Create4x4EmptyBlock(4, 8)),
+            decoder.DecodeBlockMode(Create4x4EmptyBlock(4, 8, 9)),
             Is.EqualTo(IntraPredictionBlockMode.HorizontalUp));
     }
 
@@ -312,37 +312,135 @@ public class IntraDecoderBlockPredictionTests
 
         // (0, 0) start with DC
         Assert.That(
-            decoder.DecodeBlockMode(Create8x8EmptyBlock(0, 0)),
+            decoder.DecodeBlockMode(Create8x8EmptyBlock(0, 0, 0)),
             Is.EqualTo(IntraPredictionBlockMode.DC));
 
         // (0, 0) again but changing bigger
         Assert.That(
-            decoder.DecodeBlockMode(Create8x8EmptyBlock(0, 0)),
+            decoder.DecodeBlockMode(Create8x8EmptyBlock(0, 0, 0)),
             Is.EqualTo(IntraPredictionBlockMode.HorizontalUp));
 
         // (8, 0) top blocks copies left (horizontal up)
         Assert.That(
-            decoder.DecodeBlockMode(Create8x8EmptyBlock(8, 0)),
+            decoder.DecodeBlockMode(Create8x8EmptyBlock(8, 0, 1)),
             Is.EqualTo(IntraPredictionBlockMode.HorizontalUp));
 
         // (8, 0) again but changing (smaller)
         Assert.That(
-            decoder.DecodeBlockMode(Create8x8EmptyBlock(8, 0)),
+            decoder.DecodeBlockMode(Create8x8EmptyBlock(8, 0, 1)),
             Is.EqualTo(IntraPredictionBlockMode.DeltaPlane));
 
         // (0, 8) bottom copies top (horizontal up)
         Assert.That(
-            decoder.DecodeBlockMode(Create8x8EmptyBlock(0, 8)),
+            decoder.DecodeBlockMode(Create8x8EmptyBlock(0, 8, 2)),
             Is.EqualTo(IntraPredictionBlockMode.HorizontalUp));
 
         // (8, 8) does min left (horizontal up) and top (delta plane)
         Assert.That(
-            decoder.DecodeBlockMode(Create8x8EmptyBlock(8, 8)),
+            decoder.DecodeBlockMode(Create8x8EmptyBlock(8, 8, 3)),
             Is.EqualTo(IntraPredictionBlockMode.DeltaPlane));
 
         // (0,0) for next block restart
         Assert.That(
-            decoder.DecodeBlockMode(Create8x8EmptyBlock(0, 0)),
+            decoder.DecodeBlockMode(Create8x8EmptyBlock(0, 0, 0)),
+            Is.EqualTo(IntraPredictionBlockMode.DC));
+    }
+
+    [Test]
+    public void ModePrediction4x4TakesAbove8x8FromMacroblock()
+    {
+        // note: bytes are reversed due to LE.
+        var decoder = CreateDecoder(0b11_1_00000, 0b0110_1_1_01);
+
+        // Fill mode predictions from first two 8x8 blocks (first row (0,0) -> (8, 0))
+        Assert.That(
+            decoder.DecodeBlockMode(Create8x8EmptyBlock(0, 0, 0)),
+            Is.EqualTo(IntraPredictionBlockMode.DiagonalDownRight));
+        Assert.That(
+            decoder.DecodeBlockMode(Create8x8EmptyBlock(8, 0, 1)),
+            Is.EqualTo(IntraPredictionBlockMode.DiagonalDownRight));
+
+        // Second row uses blocks 4x4 and it takes mode prediction from above block 8x8
+        Assert.That(
+            decoder.DecodeBlockMode(Create4x4EmptyBlock(0, 8, 0)),
+            Is.EqualTo(IntraPredictionBlockMode.DiagonalDownRight));
+
+        // again but changing to check min later
+        Assert.That(
+            decoder.DecodeBlockMode(Create4x4EmptyBlock(0, 8, 0)),
+            Is.EqualTo(IntraPredictionBlockMode.VerticalLeft));
+
+        // min left (8 vertical left) and top (7 diagonal down rigt)
+        Assert.That(
+            decoder.DecodeBlockMode(Create4x4EmptyBlock(4, 8, 1)),
+            Is.EqualTo(IntraPredictionBlockMode.DiagonalDownRight));
+    }
+
+    [Test]
+    public void ModePrediction4x4TakesAboveLeft4x4FromMacroblock()
+    {
+        // note: bytes are reversed due to LE.
+        var decoder = CreateDecoder(0b1_0000_111, 0b0001_1_010, 0xFF, 0xFF);
+
+        // Quick fill left and top side of target block (8, 8)
+        Assert.That(
+            decoder.DecodeBlockMode(Create4x4EmptyBlock(4, 8, 1)),
+            Is.EqualTo(IntraPredictionBlockMode.DeltaPlane));
+        Assert.That(
+            decoder.DecodeBlockMode(Create4x4EmptyBlock(4, 12, 3)),
+            Is.EqualTo(IntraPredictionBlockMode.Vertical));
+        Assert.That(
+            decoder.DecodeBlockMode(Create4x4EmptyBlock(8, 4, 2)),
+            Is.EqualTo(IntraPredictionBlockMode.VerticalRight));
+        Assert.That(
+            decoder.DecodeBlockMode(Create4x4EmptyBlock(12, 4, 3)),
+            Is.EqualTo(IntraPredictionBlockMode.Horizontal));
+
+        // From block 8x8 @ (8, 8)
+        // Block 4x4 (0,0) = (8,8) -> min left(4,8)=2_DeltaPlane & top(8,4)=6_VerticalRight
+        Assert.That(
+            decoder.DecodeBlockMode(Create4x4EmptyBlock(8, 8, 0)),
+            Is.EqualTo(IntraPredictionBlockMode.DeltaPlane));
+
+        // Block 4x4 (4,0) = (12,8) -> min left(8,8)=2_DeltaPlane & top(12, 4)=1_Horizontal
+        Assert.That(
+            decoder.DecodeBlockMode(Create4x4EmptyBlock(12, 8, 1)),
+            Is.EqualTo(IntraPredictionBlockMode.Horizontal));
+
+        // Block 4x4 (0,4) = (8,12) -> min left(4, 12)=0_Vertical & top(8,8)=2_DeltaPlane
+        Assert.That(
+            decoder.DecodeBlockMode(Create4x4EmptyBlock(8, 12, 2)),
+            Is.EqualTo(IntraPredictionBlockMode.Vertical));
+
+        // Block 4x4 (4,4) = (12,12)
+        Assert.That(
+            decoder.DecodeBlockMode(Create4x4EmptyBlock(12, 12, 3)),
+            Is.EqualTo(IntraPredictionBlockMode.Vertical));
+    }
+
+    [Test]
+    public void ModePredictionResetPerMacroblock()
+    {
+        // note: bytes are reversed due to LE.
+        var decoder = CreateDecoder(0x00, 0b0110_1_1_1_1);
+
+        // Fill mode predictions
+        Assert.That(
+            decoder.DecodeBlockMode(Create8x8EmptyBlock(0, 0, 0)),
+            Is.EqualTo(IntraPredictionBlockMode.DiagonalDownRight));
+        Assert.That(
+            decoder.DecodeBlockMode(Create8x8EmptyBlock(8, 0, 1)),
+            Is.EqualTo(IntraPredictionBlockMode.DiagonalDownRight));
+        Assert.That(
+            decoder.DecodeBlockMode(Create8x8EmptyBlock(0, 8, 2)),
+            Is.EqualTo(IntraPredictionBlockMode.DiagonalDownRight));
+        Assert.That(
+            decoder.DecodeBlockMode(Create8x8EmptyBlock(8, 8, 3)),
+            Is.EqualTo(IntraPredictionBlockMode.DiagonalDownRight));
+
+        // below macroblock resets
+        Assert.That(
+            decoder.DecodeBlockMode(Create8x8EmptyBlock(0, 16, 0)),
             Is.EqualTo(IntraPredictionBlockMode.DC));
     }
 
@@ -379,7 +477,7 @@ public class IntraDecoderBlockPredictionTests
     public void InvalidModeThrow()
     {
         var decoder = CreateDecoder();
-        var block = Create4x4EmptyBlock();
+        var block = Create4x4EmptyBlock(0, 0, 0);
         Assert.That(
             () => decoder.PerformBlockPrediction(block, (IntraPredictionBlockMode)100),
             Throws.InstanceOf<NotImplementedException>());
@@ -392,7 +490,7 @@ public class IntraDecoderBlockPredictionTests
 
     private static void AssertPredictionMode(byte[] expected, IntraPredictionBlockMode mode, byte[] data)
     {
-        PixelBlock block = Create4x4EmptyBlock();
+        PixelBlock block = Create4x4EmptyBlock(4, 4, 5);
         IntraDecoderBlockPrediction decoder = CreateDecoder(data);
         var expectedBlock = new PixelBlock(expected, 4, new Rectangle(0, 0, 4, 4), 0);
 
@@ -407,7 +505,7 @@ public class IntraDecoderBlockPredictionTests
 
     private static void AssertPredictionMode(byte[] expected, IntraPredictionBlockMode mode, int sx, int sy)
     {
-        PixelBlock block = Create4x4EmptyBlock(sx, sy);
+        PixelBlock block = Create4x4EmptyBlock(sx, sy, 0);
         IntraDecoderBlockPrediction decoder = CreateDecoder();
         var expectedBlock = new PixelBlock(expected, 4, new Rectangle(0, 0, 4, 4), 0);
 
@@ -427,12 +525,10 @@ public class IntraDecoderBlockPredictionTests
         return new IntraDecoderBlockPrediction(reader);
     }
 
-#pragma warning disable IDE0047 // Remove unnecessary parentheses
-    private static PixelBlock Create4x4EmptyBlock(int startX = 4, int startY = 4)
+    private static PixelBlock Create4x4EmptyBlock(int startX, int startY, int index)
     {
         // Clone to have the neighbors and then clean it.
-        int idx = ((startX % 16) / 4) + (startY % 16);
-        var block = new PixelBlock(Block16x16.ToArray(), 16, new Rectangle(startX, startY, 4, 4), idx);
+        var block = new PixelBlock(Block16x16.ToArray(), 16, new Rectangle(startX, startY, 4, 4), index);
 
         foreach ((int x, int y) in block.Iterate()) {
             block[x, y] = 0;
@@ -441,11 +537,10 @@ public class IntraDecoderBlockPredictionTests
         return block;
     }
 
-    private static PixelBlock Create8x8EmptyBlock(int startX = 8, int startY = 8)
+    private static PixelBlock Create8x8EmptyBlock(int startX, int startY, int index)
     {
         // Clone to have the neighbors and then clean it.
-        int idx = ((startX % 16) / 8) + ((startY % 16) / 8 * 2);
-        var block = new PixelBlock(Block16x16.ToArray(), 16, new Rectangle(startX, startY, 8, 8), idx);
+        var block = new PixelBlock(new byte[4 * 16 * 16], 16, new Rectangle(startX, startY, 8, 8), index);
 
         foreach ((int x, int y) in block.Iterate()) {
             block[x, y] = 0;
@@ -453,5 +548,4 @@ public class IntraDecoderBlockPredictionTests
 
         return block;
     }
-#pragma warning restore IDE0047
 }

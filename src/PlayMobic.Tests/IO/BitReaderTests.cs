@@ -103,6 +103,20 @@ internal class BitReaderTests
     }
 
     [Test]
+    public void ReadIncrementsPosition()
+    {
+        using Stream stream = CreateStream(0xCA, 0xFE, 0xC0, 0xC0);
+        var reader = new BitReader(stream, EndiannessMode.LittleEndian, 16);
+        Assert.That(reader.BitPosition, Is.EqualTo(0));
+
+        _ = reader.Read(10);
+        Assert.That(reader.BitPosition, Is.EqualTo(10));
+
+        _ = reader.Read(15);
+        Assert.That(reader.BitPosition, Is.EqualTo(25));
+    }
+
+    [Test]
     public void ReadEndOfStreamThrows()
     {
         using Stream stream = CreateStream();

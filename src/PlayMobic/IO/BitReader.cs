@@ -30,6 +30,8 @@ public class BitReader
 
     public EndiannessMode Endianness { get; }
 
+    public long BitPosition { get; private set; }
+
     public int Read(int length)
     {
         EnsureEnoughBuffer(length);
@@ -51,6 +53,7 @@ public class BitReader
         }
 
         bufferLength -= length;
+        BitPosition += length;
 
         return value;
     }

@@ -1,6 +1,7 @@
 ﻿namespace PlayMobic.Video.Mobiclip;
 
 using System;
+using System.Diagnostics.CodeAnalysis;
 using System.Runtime.CompilerServices;
 using PlayMobic.IO;
 
@@ -18,7 +19,7 @@ internal class IntraDecoderBlockPrediction : IIntraDecoderBlockPrediction
         // We store the mode of each 8x8 or 4x4 block to use it to predict others.
         // We set the array to the max capacity (16x16 macroblock has 16 4x4 blocks).
         // If we are processing a 8x8 block, we will have some unused items.
-        prevBlockModes = new int[16];
+        prevBlockModes = new int[4 * 4];
     }
 
     public void PerformBlockPrediction(PixelBlock block, IntraPredictionBlockMode mode)
@@ -73,8 +74,10 @@ internal class IntraDecoderBlockPrediction : IIntraDecoderBlockPrediction
         }
     }
 
+    [SuppressMessage("Style", "IDE0047:Remove unnecessary parentheses", Justification = "Readibility")]
     internal IntraPredictionBlockMode DecodeBlockMode(PixelBlock block)
     {
+        // Only for luma macroblocks (16, 16):
         // As the mode from neighbor blocks are highly correlated, the encoder
         // saves some bits by calculating the most probable mode: H.264 8.3.1.1
         // This is computed as the minimum value between our neighbor blocks:
@@ -83,9 +86,16 @@ internal class IntraDecoderBlockPrediction : IIntraDecoderBlockPrediction
         // If we are in the top row or left row of the macroblock, ignore the
         // non-existing neighbor. If there aren't neighbors (block 0,0) use DC.
         // DC is the only mode that won't require neighbor pixels either.
-        int blocksPerRow = 16 / block.Width;
-        int aboveBlockIdx = block.Index - blocksPerRow;
-        int leftBlockIdx = (block.X == 0) ? -1 : block.Index - 1;
+        // We can't use the block index as it has no meaning as we could have a
+        // 4x4 block from 8x8 blocks or from 16x16 blocks.
+        const int BlocksPerRow = 16 / 4;
+
+        // Get the position of the block inside the macroblock (16, 16)
+        (int macroX, int macroY) = ((block.X % 16) / 4, (block.Y % 16) / 4);
+        int blockIdx = (macroY * BlocksPerRow) + macroX;
+
+        int aboveBlockIdx = blockIdx - BlocksPerRow;
+        int leftBlockIdx = (macroX == 0) ? -1 : blockIdx - 1;
 
         int predictedMode;
         if (aboveBlockIdx < 0 && leftBlockIdx < 0) {
@@ -109,7 +119,14 @@ internal class IntraDecoderBlockPrediction : IIntraDecoderBlockPrediction
                 : remainingModeSelector + 1;
         }
 
-        prevBlockModes[block.Index] = predictedMode;
+        prevBlockModes[blockIdx] = predictedMode;
+
+        // if the block is 8x8, fill it like it were 4 blocks of 4x4
+        if (block.Width == 8) {
+            prevBlockModes[blockIdx + 1] = predictedMode; // right
+            prevBlockModes[blockIdx + BlocksPerRow] = predictedMode; // down
+            prevBlockModes[blockIdx + BlocksPerRow + 1] = predictedMode; // down right
+        }
 
         return (IntraPredictionBlockMode)predictedMode;
     }
