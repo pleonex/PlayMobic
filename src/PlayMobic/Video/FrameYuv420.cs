@@ -33,6 +33,8 @@ public class FrameYuv420
 
     public int Height { get; init; }
 
+    public YuvColorSpace ColorSpace { get; set; }
+
     public ReadOnlySpan<byte> PackedData => data;
 
     internal PixelBlock Luma { get; }

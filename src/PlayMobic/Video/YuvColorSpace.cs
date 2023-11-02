@@ -1,6 +1,6 @@
 ﻿namespace PlayMobic.Video;
 
-internal enum YuvColorSpace
+public enum YuvColorSpace
 {
     None,
     YCoCg,

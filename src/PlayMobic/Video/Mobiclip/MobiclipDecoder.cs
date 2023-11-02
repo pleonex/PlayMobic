@@ -34,8 +34,10 @@ public class MobiclipDecoder : IVideoDecoder
         ArgumentNullException.ThrowIfNull(data);
         var reader = new BitReader(data, EndiannessMode.LittleEndian, 16);
 
-        // There is a buffer of 6 frames (0 is the current to decode), so P-prediction decode using previous 5 frames.
-        // At the beginning we rotate the buffer so the last decoded frame becomes the first on the buffer.
+        // There is a buffer of 6 frames (0 is the current to decode),
+        // so P-prediction decode using previous 5 frames.
+        // At the beginning we rotate the buffer so the last decoded frame
+        // becomes the first on the buffer.
         frames.Rotate();
         frames.Current.CleanData();
 
@@ -46,10 +48,7 @@ public class MobiclipDecoder : IVideoDecoder
             DecodePFrame(reader);
         }
 
-        if (colorSpace is YuvColorSpace.YCoCg) {
-            // TODO: transform to standard YCbCr colorspace
-        }
-
+        frames.Current.ColorSpace = colorSpace;
         return frames.Current;
     }
 
