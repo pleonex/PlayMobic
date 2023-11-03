@@ -13,24 +13,6 @@ using PlayMobic.IO;
 /// The prediction mode may be available for all the block or per-sublock.
 /// The prediction mode may be also predicted as it's correlated with its neighbors.
 /// The residual data is just after each block prediction data.
-/// Pseudo-code:
-/// - Residual block 8x8 table indicator index
-/// - IF no predicted mode:
-///   - mode at 16x16 level applying all sub-blocks
-///   - (if mode is DeltaPlane) plane delta value for 16x16
-/// - FOR EACH 8x8:
-///   - IF not residual for this 8x8:
-///     - (if predicted mode) mode prediction info
-///     - (if mode is DeltaPlane AND was predicted) plane delta for 8x8
-///   - ELSE:
-///     - partition mode | resdiaul for block 4x4 table indicator index
-///     - IF 8x8:
-///       - (if predicted mode) mode prediction info
-///       - (if mode is DeltaPlane AND was predicted) plane delta for 8x8
-///       - RESIDUAL for 8x8
-///     - ELSE FOREACH 4x4:
-///       - (if predicted mode) mode prediction info
-///       - (if 4x4 block has residual) RESIDUAL.
 /// </remarks>
 internal class IntraDecoder
 {
@@ -50,9 +32,7 @@ internal class IntraDecoder
 
     private readonly BitReader reader;
     private readonly IIntraDecoderBlockPrediction blockPrediction;
-    private readonly DiscreteCosineTransformer dct;
-    private readonly Quantization quantization;
-    private readonly EntropyVlcEncoding entropyVlc;
+    private readonly ResidualEncoding residualEncoding;
 
     public IntraDecoder(BitReader reader, int vlcTableIndex, int quantizerIndex)
     : this(reader, vlcTableIndex, quantizerIndex, new IntraDecoderBlockPrediction(reader))
@@ -68,9 +48,7 @@ internal class IntraDecoder
         this.reader = reader ?? throw new ArgumentNullException(nameof(reader));
         this.blockPrediction = blockPrediction ?? throw new ArgumentNullException(nameof(blockPrediction));
 
-        dct = new DiscreteCosineTransformer();
-        quantization = new Quantization(quantizerIndex);
-        entropyVlc = new EntropyVlcEncoding(vlcTableIndex);
+        residualEncoding = new ResidualEncoding(reader, vlcTableIndex, quantizerIndex);
     }
 
     public void DecodeMacroBlock(MacroBlock macroBlock, bool lumaHasModePerSubBlocks)
@@ -138,7 +116,7 @@ internal class IntraDecoder
         if (partitionFlag == 0) {
             // Block 8x8 with residual
             blockPrediction.PerformBlockPrediction(block, mode);
-            ApplyResidual(block);
+            residualEncoding.DecodeAndAddResidual(block);
             return;
         }
 
@@ -151,27 +129,7 @@ internal class IntraDecoder
             blockPrediction.PerformBlockPrediction(blocks4x4[i], mode);
 
             if (TestBit(hasResidualFlags, i)) {
-                ApplyResidual(blocks4x4[i]);
-            }
-        }
-    }
-
-    private void ApplyResidual(PixelBlock block)
-    {
-        // 1. VLC to get residual DC coefficients matrix
-        int[] coefficients = entropyVlc.DecodeResidual(reader, block.Width * block.Height);
-
-        // 2. Dequantize to re-store scale
-        quantization.Dequantize(coefficients);
-
-        // 3. Apply inverse DCT to decode
-        int[] residual = dct.InverseTransformation(coefficients, block.Width);
-
-        // 4. Sum the residual to the predicted colors in the block.
-        for (int y = 0; y < block.Height; y++) {
-            for (int x = 0; x < block.Width; x++) {
-                int idx = x + (y * block.Width);
-                block[x, y] = (byte)Math.Clamp(block[x, y] + residual[idx], byte.MinValue, byte.MaxValue);
+                residualEncoding.DecodeAndAddResidual(blocks4x4[i]);
             }
         }
     }

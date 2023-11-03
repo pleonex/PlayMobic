@@ -18,18 +18,14 @@ internal class InterDecoder
 
     private readonly BitReader reader;
     private readonly IntraDecoder intraDecoder;
-    private readonly DiscreteCosineTransformer dct;
-    private readonly Quantization quantization;
-    private readonly EntropyVlcEncoding entropyVlc;
+    private readonly ResidualEncoding residualEncoding;
 
     public InterDecoder(BitReader reader, int quantizerIndex)
     {
         this.reader = reader;
 
         intraDecoder = new IntraDecoder(reader, 0, quantizerIndex);
-        dct = new DiscreteCosineTransformer();
-        quantization = new Quantization(quantizerIndex);
-        entropyVlc = new EntropyVlcEncoding(0);
+        residualEncoding = new ResidualEncoding(reader, 0, quantizerIndex);
     }
 
     public void DecodeMacroBlock(MacroBlock macroBlock)
@@ -88,7 +84,7 @@ internal class InterDecoder
         int partitionFlag = reader.ReadExpGolomb();
         if (partitionFlag == 0) {
             // Block 8x8 with residual
-            ApplyResidual(block);
+            residualEncoding.DecodeAndAddResidual(block);
             return;
         }
 
@@ -100,27 +96,7 @@ internal class InterDecoder
         PixelBlock[] blocks4x4 = block.Partition(4, 4);
         for (int i = 0; i < blocks4x4.Length; i++) {
             if (TestBit(hasResidualFlags, i)) {
-                ApplyResidual(blocks4x4[i]);
-            }
-        }
-    }
-
-    private void ApplyResidual(PixelBlock block)
-    {
-        // 1. VLC to get residual DC coefficients matrix
-        int[] coefficients = entropyVlc.DecodeResidual(reader, block.Width * block.Height);
-
-        // 2. Dequantize to re-store scale
-        quantization.Dequantize(coefficients);
-
-        // 3. Apply inverse DCT to decode
-        int[] residual = dct.InverseTransformation(coefficients, block.Width);
-
-        // 4. Sum the residual to the predicted colors in the block.
-        for (int y = 0; y < block.Height; y++) {
-            for (int x = 0; x < block.Width; x++) {
-                int idx = x + (y * block.Width);
-                block[x, y] = (byte)Math.Clamp(block[x, y] + residual[idx], byte.MinValue, byte.MaxValue);
+                residualEncoding.DecodeAndAddResidual(blocks4x4[i]);
             }
         }
     }
