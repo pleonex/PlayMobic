@@ -67,8 +67,8 @@ internal class EntropyVlcEncoding
 #pragma warning restore SA1137
 
     private static readonly Huffman[] HuffmanTables = new[] {
-        Huffman.LoadFromFullIndexTable(0),
-        Huffman.LoadFromFullIndexTable(1),
+        HuffmanFactory.CreateFromResidualTable(typeof(Huffman).Namespace + ".huffman_residual_table0.bin"),
+        HuffmanFactory.CreateFromResidualTable(typeof(Huffman).Namespace + ".huffman_residual_table1.bin"),
     };
 
     private readonly Huffman huffman;

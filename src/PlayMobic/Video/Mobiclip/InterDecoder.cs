@@ -17,45 +17,36 @@ internal class InterDecoder
     };
 
     private readonly BitReader reader;
+    private readonly Dictionary<(int Width, int Height), Huffman> huffmanTables;
+    private readonly MotionCompensationDecoder motionDecoder;
     private readonly IntraDecoder intraDecoder;
     private readonly ResidualEncoding residualEncoding;
 
-    public InterDecoder(BitReader reader, int quantizerIndex)
+    public InterDecoder(BitReader reader, int quantizerIndex, bool isStereo)
     {
         this.reader = reader;
-
+        huffmanTables = isStereo ? HuffmanMotionModeTables.StereoVideoTables : HuffmanMotionModeTables.Tables;
         intraDecoder = new IntraDecoder(reader, 0, quantizerIndex);
+        motionDecoder = new MotionCompensationDecoder(reader, huffmanTables);
         residualEncoding = new ResidualEncoding(reader, 0, quantizerIndex);
     }
 
     public void DecodeMacroBlock(MacroBlock macroBlock)
     {
-        // TODO: vector buffer
-        // TODO: get mode from huffman
-        int mode = -1;
+        int mode = huffmanTables[(16, 16)].ReadCodeword(reader);
         if (mode == 6) {
             intraDecoder.DecodeMacroBlock(macroBlock, false);
         } else if (mode == 7) {
             intraDecoder.DecodeMacroBlock(macroBlock, true);
         } else {
-            DecodeMotionCompensation(macroBlock, mode);
-        }
+            motionDecoder.Decode(macroBlock, mode);
 
-        DecodeMacroBlockResidual(macroBlock);
+            DecodeMacroBlockResidual(macroBlock);
+        }
     }
 
     [MethodImpl(MethodImplOptions.AggressiveInlining)]
     private static bool TestBit(byte flags, int idx) => ((flags >> idx) & 1) == 1;
-
-    private void DecodeMotionCompensation(MacroBlock block, int mode)
-    {
-        // mode 0: motion compensation from current frame
-        // mode 1-5: motion compensation with delta from past frame
-        // mode 6-7: forbidden at this stage
-        // mode 8: partition by height and decode each block
-        // mode 9: partition by width and decode each block
-        throw new NotImplementedException();
-    }
 
     private void DecodeMacroBlockResidual(MacroBlock macroBlock)
     {

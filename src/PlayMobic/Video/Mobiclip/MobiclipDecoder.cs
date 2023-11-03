@@ -14,6 +14,7 @@ public class MobiclipDecoder : IVideoDecoder
     private const int FrameBufferLength = 6;
 
     private readonly FramesBuffer<FrameYuv420> frames;
+    private readonly bool isVideoStereo;
 
     // I-frame data to use in following P-frames
     private YuvColorSpace colorSpace;
@@ -25,7 +26,19 @@ public class MobiclipDecoder : IVideoDecoder
     /// <param name="width">Video width resolution.</param>
     /// <param name="height">Video height resolution.</param>
     public MobiclipDecoder(int width, int height)
+        : this(width, height, false)
     {
+    }
+
+    /// <summary>
+    /// Initializes a new instance of the <see cref="MobiclipDecoder"/> class.
+    /// </summary>
+    /// <param name="width">Video width resolution.</param>
+    /// <param name="height">Video height resolution.</param>
+    /// <param name="isStereo">Indicates if the video is stereo (3D).</param>
+    public MobiclipDecoder(int width, int height, bool isStereo)
+    {
+        isVideoStereo = isStereo;
         frames = new FramesBuffer<FrameYuv420>(
             FrameBufferLength,
             () => new FrameYuv420(width, height));
@@ -79,7 +92,7 @@ public class MobiclipDecoder : IVideoDecoder
         int quantizationDeltaIdx = reader.ReadExpGolombSigned();
         int pQuantIndex = quantizationIdx + quantizationDeltaIdx;
 
-        var interDecoder = new InterDecoder(reader, pQuantIndex);
+        var interDecoder = new InterDecoder(reader, pQuantIndex, isVideoStereo);
 
         MacroBlock[] macroBlocks = frames.Current.GetMacroBlocks();
         foreach (MacroBlock macroBlock in macroBlocks) {

@@ -2,76 +2,22 @@
 
 using System;
 using System.Collections.Generic;
-using System.Linq;
-using System.Reflection;
-using System.Text;
-using System.Threading.Tasks;
 using PlayMobic.IO;
-using Yarhl.IO;
 
 /// <summary>
 /// Huffman implementation similar to the original decoder.
 /// </summary>
-/// <remarks>
-/// It builds the tree from the original block of data to showcase its format.
-/// </remarks>
 internal class Huffman
 {
-    private static readonly string[] MobiclipTable = new string[] {
-        typeof(Huffman).Namespace + ".huffman0.bin",
-        typeof(Huffman).Namespace + ".huffman1.bin",
-    };
-
     private readonly int codewordMaxLength;
     private readonly Node root;
-    private readonly Dictionary<int, Codeword> codewords;
+    private readonly Dictionary<int, HuffmanCodeword> codewords;
 
     public Huffman(int codewordMaxLength)
     {
         this.codewordMaxLength = codewordMaxLength;
         root = Node.CreateNode();
-        codewords = new Dictionary<int, Codeword>();
-    }
-
-    public static Huffman LoadFromFullIndexTable(int tableIdx)
-    {
-        string tablePath = MobiclipTable[tableIdx];
-        using Stream tableStream = Assembly.GetExecutingAssembly().GetManifestResourceStream(tablePath)
-            ?? throw new FileNotFoundException("Missing huffman table");
-
-        // Format is for each item:
-        // index (13 bits max): codeword
-        // bit0-3: number of codeword bits (to clean up the index)
-        // bit4-15: value
-        // this is a trick to decode huffman via a hash table lookup (fast reads)
-        // it repeats the same value for all the variant of short codewords
-        // so for a codeword of 10 bits, it will repeat the value for all combinations
-        // of that codeword and its 3 remaining bits.
-        int numItems = (int)(tableStream.Length / 2);
-        var reader = new DataReader(tableStream);
-
-        const int MaxCodewordLength = 13;
-        var huffman = new Huffman(MaxCodewordLength);
-
-        for (int i = 0; i < numItems; i++) {
-            ushort item = reader.ReadUInt16();
-
-            int bitCount = item & 0xF;
-            int value = item >> 4;
-            int codeword = i >> (MaxCodewordLength - bitCount);
-
-            if (bitCount == 1) {
-                // padding
-                continue;
-            }
-
-            huffman.InsertCodeword(codeword, bitCount, value);
-        }
-
-        // the codeword for 0 is "hard-coded" in code
-        huffman.InsertCodeword(0b00000011, 8, 0);
-
-        return huffman;
+        codewords = new Dictionary<int, HuffmanCodeword>();
     }
 
     public int ReadCodeword(BitReader reader)
@@ -99,13 +45,12 @@ internal class Huffman
         throw new FormatException("codeword not found");
     }
 
-    public (int Codeword, int BitCount) GetCodeword(int value)
+    public HuffmanCodeword GetCodeword(int value)
     {
-        Codeword item = codewords[value];
-        return (item.Code, item.BitCount);
+        return codewords[value];
     }
 
-    private void InsertCodeword(int codeword, int bitCount, int value)
+    public void InsertCodeword(int codeword, int bitCount, int value)
     {
         // Find the parent
         Node current = root;
@@ -140,10 +85,9 @@ internal class Huffman
             throw new InvalidOperationException("Invalid huffman tree");
         }
 
-        codewords[value] = new Codeword(codeword, bitCount);
+        codewords[value] = new HuffmanCodeword(codeword, bitCount, value);
     }
 
-    private sealed record Codeword(int Code, int BitCount);
     private sealed record Node
     {
         private Node()
