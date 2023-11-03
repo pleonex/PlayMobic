@@ -80,7 +80,7 @@ internal class IntraDecoder
         // - prediction mode for macroblock or per mode
         // - CBP: coded block pattern for each block
         // - block size for residual (different if prediction on 16x16)
-        long residualIdx = reader.ReadExpGolomb();
+        int residualIdx = reader.ReadExpGolomb();
         byte residualFlags = CodedBlockPatterns8x8[residualIdx];
 
         // First we process the luma macroblock (16x16)

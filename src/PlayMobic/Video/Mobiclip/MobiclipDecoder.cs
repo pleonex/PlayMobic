@@ -14,7 +14,10 @@ public class MobiclipDecoder : IVideoDecoder
     private const int FrameBufferLength = 6;
 
     private readonly FramesBuffer<FrameYuv420> frames;
+
+    // I-frame data to use in following P-frames
     private YuvColorSpace colorSpace;
+    private int quantizationIdx;
 
     /// <summary>
     /// Initializes a new instance of the <see cref="MobiclipDecoder"/> class.
@@ -59,12 +62,12 @@ public class MobiclipDecoder : IVideoDecoder
         colorSpace = (colorSpaceKind == 0) ? YuvColorSpace.YCoCg : YuvColorSpace.YCbCr;
 
         int vlcTableIndex = reader.Read(1);
-        int quantizerIndex = reader.Read(6);
+        quantizationIdx = reader.Read(6);
+
+        var intraDecoder = new IntraDecoder(reader, vlcTableIndex, quantizationIdx);
 
         // Create the macroblocks: luma 16x16, chroma 8x8 and decode each of them.
         MacroBlock[] macroBlocks = frames.Current.GetMacroBlocks();
-
-        var intraDecoder = new IntraDecoder(reader, vlcTableIndex, quantizerIndex);
         foreach (MacroBlock macroBlock in macroBlocks) {
             bool modePerBlock = reader.ReadBoolean();
             intraDecoder.DecodeMacroBlock(macroBlock, modePerBlock);
@@ -73,6 +76,14 @@ public class MobiclipDecoder : IVideoDecoder
 
     private void DecodePFrame(BitReader reader)
     {
-        throw new NotImplementedException();
+        int quantizationDeltaIdx = reader.ReadExpGolombSigned();
+        int pQuantIndex = quantizationIdx + quantizationDeltaIdx;
+
+        var interDecoder = new InterDecoder(reader, pQuantIndex);
+
+        MacroBlock[] macroBlocks = frames.Current.GetMacroBlocks();
+        foreach (MacroBlock macroBlock in macroBlocks) {
+            interDecoder.DecodeMacroBlock(macroBlock);
+        }
     }
 }

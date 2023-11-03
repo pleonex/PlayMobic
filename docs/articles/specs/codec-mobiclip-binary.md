@@ -24,61 +24,20 @@ ends on a full byte. Each frame consists on:
 | 6    | int          | Quantization parameter              |
 | ...  | MacroBlock[] | Macroblock data                     |
 
-## P frame prediction
+### Intra macroBlock
 
-| Bits | Type              | Description                  |
-| ---- | ----------------- | ---------------------------- |
-| ...  | Signed exp-golomb | Quantization delta parameter |
-| ...  | PMacroBlock[]     | P frames macroblocks data    |
+| Bits | Type         | Description                                                         |
+| ---- | ------------ | ------------------------------------------------------------------- |
+| 1    | bool         | (**Only for I macroblocks**) Has macroblock level _prediction mode_ |
+| ...  | Exp-Golomb   | Block 8x8 residual information table index                          |
+| 3    | int          | **Only** if it has _macroblock level mode_: prediction mode         |
+| ...  | Exp-Golomb   | **Only** if _macroblock level mode_ is delta plane: value           |
+| ...  | IntraBlock[] | 8x8 blocks in Luma macroblock                                       |
+| 3    | int          | Prediction mode for chroma blocks U and V                           |
+| ...  | IntraBlock   | U block data                                                        |
+| ...  | IntraBlock   | V block data                                                        |
 
-### P MacroBlocks
-
-| Bits | Type | Description                         |
-| ---- | ---- | ----------------------------------- |
-| ...  | int  | VLC encoded motion prediction index |
-
-- If index is 6: [intra macroblock](#intra-macroblock) data without residual
-- If index is 7: [intra macroblock](#intra-macroblock) data with residual
-- Otherwise: [motion predicted macroblock](#p-macroblock)
-
-## Intra macroBlock
-
-| Bits | Type       | Description                                                         |
-| ---- | ---------- | ------------------------------------------------------------------- |
-| 1    | bool       | (**Only for I macroblocks**) Has macroblock level _prediction mode_ |
-| ...  | Exp-Golomb | Block 8x8 residual information table index                          |
-| 3    | int        | **Only** if it has _macroblock level mode_: prediction mode         |
-| ...  | Exp-Golomb | **Only** if _macroblock level mode_ is delta plane: value           |
-| ...  | Block[]    | 8x8 blocks in Luma macroblock                                       |
-| 3    | int        | Prediction mode for chroma blocks U and V                           |
-| ...  | Block      | U block data                                                        |
-| ...  | Block      | V block data                                                        |
-
-## P MacroBlock
-
-| Bits | Type                | Description                               |
-| ---- | ------------------- | ----------------------------------------- |
-| ...  | MotionPredicition[] | Motion prediction data for the macroblock |
-| ...  | PBlock[]            | Luma residual                             |
-| ...  | PBlock[]            | U block data                              |
-| ...  | PBlock[]            | V block data                              |
-
-### Motion prediction
-
-- If index is less or equal to 5:
-
-| Bits | Type              | Description         |
-| ---- | ----------------- | ------------------- |
-| ...  | Signed exp-Golomb | Delta X destination |
-| ...  | Signed exp-Golomb | Delta Y destination |
-
-- Otherwise
-
-| Bits | Type   | Description              |
-| ---- | ------ | ------------------------ |
-| ...  | int[2] | VLC motion encoded index |
-
-## Block
+### Intra block
 
 If the 8x8 block does **not** have residual:
 
@@ -98,14 +57,7 @@ block. Otherwise we split further into 4x4 pixel blocks. For each of them
 | ...  | Exp-Golomb      | **Only** previous mode is delta plane: value            |
 | ...  | Residual        | Residual information encoded with VLC                   |
 
-## P block
-
-| Bits | Type       | Description                                              |
-| ---- | ---------- | -------------------------------------------------------- |
-| ...  | Exp-Golomb | P frame coefficient 4x4 table index                      |
-| ...  | Residual[] | Coefficients for each 4x4 block or full block if index 0 |
-
-## Intra mode prediction
+### Intra mode prediction
 
 | Bits | Type | Description                             |
 | ---- | ---- | --------------------------------------- |
@@ -114,6 +66,51 @@ block. Otherwise we split further into 4x4 pixel blocks. For each of them
 
 If the encoded intra mode is equal or bigger than the predicted value, add 1.
 This allows to encoded 9 values (0-8) with 3 bits instead of 4.
+
+## P frame prediction
+
+| Bits | Type              | Description                  |
+| ---- | ----------------- | ---------------------------- |
+| ...  | Signed exp-golomb | Quantization delta parameter |
+| ...  | PBlock[]          | P macroblocks data           |
+
+### P blocks
+
+| Bits | Type           | Description                                     |
+| ---- | -------------- | ----------------------------------------------- |
+| ...  | int            | Huffman encoded prediction mode                 |
+| ...  | ...            | Block prediction data dependant on mode         |
+| ...  | Exp-Golomb     | Luma block 8x8 residual information table index |
+| ...  | PBlockResidual | Luma 8x8 blocks residual                        |
+| ...  | PBlockResidual | Chroma U residual                               |
+| ...  | PBlockResidual | Chroma V residual                               |
+
+The prediction modes are:
+
+- 0: motion compensation from current frame
+- 1-5: motion compensation with delta vector from past frame
+- 6: [intra macroblock](#intra-macroblock) data with mode per macroblock
+- 7: [intra macroblock](#intra-macroblock) data with mode per block (prediction)
+- 8: block partitioning by height, repeat for each.
+- 9: block partitioning by width, repeat for each.
+
+Modes 1-5 have additional data:
+
+| Bits | Type              | Description         |
+| ---- | ----------------- | ------------------- |
+| ...  | Signed exp-Golomb | Delta X destination |
+| ...  | Signed exp-Golomb | Delta Y destination |
+
+### P block residual
+
+| Bits | Type       | Description                                          |
+| ---- | ---------- | ---------------------------------------------------- |
+| ...  | Exp-Golomb | Block 4x4 residual information table index           |
+| ...  | Residual[] | Residual for each 4x4 block or full block if index 0 |
+
+> [!NOTE]  
+> Different to the intra block residual, we don't subtract 1 to the index of the
+> 4x4 block table.
 
 ## Residual
 
