@@ -130,7 +130,7 @@ internal class MotionCompensationDecoder
 
                 // Because of YUV 4:2:0 downsampling we divide by 2 and do it half of time
                 if ((x % 2) == 0 && (y % 2) == 0) {
-                    var chromaDelta = new Vector2D(delta.X / 2, delta.Y / 2);
+                    var chromaDelta = new Vector2D(delta.X >> 1, delta.Y >> 1);
                     int dstChromaX = dstChromaU.X + (x / 2);
                     int dstChromaY = dstChromaU.Y + (y / 2);
                     dstChromaU[x / 2, y / 2] = GetHalfPelComponent(srcFrame.ChromaU, dstChromaX, dstChromaY, chromaDelta);
@@ -155,11 +155,13 @@ internal class MotionCompensationDecoder
         if (isExactX && isExactY) {
             return block[x, y];
         } else if (isExactX) {
-            return (byte)((block[x, y] + block[x, y + 1]) / 2);
+            return (byte)((block[x, y] >> 1) + (block[x, y + 1] >> 1));
         } else if (isExactY) {
-            return (byte)((block[x, y] + block[x + 1, y]) / 2);
+            return (byte)((block[x, y] >> 1) + (block[x + 1, y] >> 1));
         } else {
-            return (byte)((block[x, y] + block[x + 1, y] + block[x, y + 1] + block[x + 1, y + 1]) / 4);
+            int a = (block[x, y] >> 1) + (block[x + 1, y] >> 1);
+            int b = (block[x, y + 1] >> 1) + (block[x + 1, y + 1] >> 1);
+            return (byte)((a >> 1) + (b >> 1));
         }
     }
 

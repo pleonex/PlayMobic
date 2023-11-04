@@ -90,9 +90,9 @@ public class MobiclipDecoder : IVideoDecoder
     private void DecodePFrame(BitReader reader)
     {
         int quantizationDeltaIdx = reader.ReadExpGolombSigned();
-        int pQuantIndex = quantizationIdx + quantizationDeltaIdx;
+        quantizationIdx += quantizationDeltaIdx;
 
-        var interDecoder = new InterDecoder(reader, frames, pQuantIndex, isVideoStereo);
+        var interDecoder = new InterDecoder(reader, frames, quantizationIdx, isVideoStereo);
 
         YuvBlock[] macroBlocks = frames.Current.GetMacroBlocks();
         foreach (YuvBlock macroBlock in macroBlocks) {
