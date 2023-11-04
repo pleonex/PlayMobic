@@ -23,8 +23,7 @@ internal class Huffman
     public int ReadCodeword(BitReader reader)
     {
         int length = 0;
-        Node? current = root.Left ?? // first bit 0 is skipped, we start directly
-            throw new InvalidOperationException("Huffman is not initialized");
+        Node? current = root;
 
         // Naviage the huffman tree bit by bit until we find a node at the end
         // it contains our uncompressed value.

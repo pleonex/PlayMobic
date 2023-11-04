@@ -39,11 +39,13 @@ internal static class HuffmanFactory
                 continue;
             }
 
-            huffman.InsertCodeword(codeword, bitCount, value);
+            // There is always an extra 0 at the left
+            // skip it because it's not present later when reading codewords.
+            huffman.InsertCodeword(codeword, bitCount - 1, value);
         }
 
         // the codeword for 0 is "hard-coded" in code
-        huffman.InsertCodeword(0b00000011, 8, 0);
+        huffman.InsertCodeword(0b00000011, 7, 0);
 
         return huffman;
     }
