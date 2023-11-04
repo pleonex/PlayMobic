@@ -42,10 +42,10 @@ internal class EntropyVlcEncoding
     };
 
     private static readonly int[] ZigZag4x4BlockScan = new[] {
-        0,  1,  5,  6,
-        2,  4,  7, 12,
-        3,  8, 11, 13,
-        9, 10, 14, 15,
+        0,  2,  3,  9,
+        1,  4,  8, 10,
+        5,  7, 11, 14,
+        6, 12, 13, 15,
     };
     private static readonly int[] DeZigZag4x4BlockScan = Enumerable.Range(0, 4 * 4)
         .Select(i => Array.IndexOf(ZigZag4x4BlockScan, i))
@@ -122,7 +122,7 @@ internal class EntropyVlcEncoding
                 (isBlockEnd, zeroesRun, amplitude) = ReadRleInfo(reader);
 
                 int residueIdx = amplitude + (isBlockEnd ? 64 : 0);
-                zeroesRun += residueTable[residueIdx];
+                zeroesRun += residueTable[128 + residueIdx];
                 amplitude *= reader.ReadBoolean() ? -1 : 1;
             } else {
                 // Cannot encoded amplitude/run in RLE info blocks, we need 17 bits

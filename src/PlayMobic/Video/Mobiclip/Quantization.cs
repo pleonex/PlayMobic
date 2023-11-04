@@ -115,6 +115,24 @@ internal class Quantization
         },
     };
 
+    private static readonly int[] ZigZag4x4BlockScan = new[] {
+        0,  2,  3,  9,
+        1,  4,  8, 10,
+        5,  7, 11, 14,
+        6, 12, 13, 15,
+    };
+
+    private static readonly int[] ZigZag8x8BlockScan = new[] {
+         0,  1,  5,  6, 14, 15, 27, 28,
+         2,  4,  7, 13, 16, 26, 29, 42,
+         3,  8, 12, 17, 25, 30, 41, 43,
+         9, 11, 18, 24, 31, 40, 44, 53,
+        10, 19, 23, 32, 39, 45, 52, 54,
+        20, 22, 33, 38, 46, 51, 55, 60,
+        21, 34, 37, 47, 50, 56, 59, 61,
+        35, 36, 48, 49, 57, 58, 62, 63,
+    };
+
     private readonly int tableIdx;
     private readonly int scale;
 
@@ -124,45 +142,27 @@ internal class Quantization
         scale = qp / 6;
     }
 
-    public void Quantize(int[] block)
-    {
-        if (block.Length is not(16 or 64)) {
-            throw new ArgumentException("Unsupported block size");
-        }
-
-        int[] table;
-        int blockScale;
-        if (block.Length == 16) {
-            table = Block4x4Table[tableIdx];
-            blockScale = scale;
-        } else {
-            table = Block8x8Table[tableIdx];
-            blockScale = scale - 2;
-        }
-
-        for (int i = 0; i < block.Length; i++) {
-            block[i] /= table[i] << blockScale;
-        }
-    }
-
     public void Dequantize(int[] block)
     {
         if (block.Length is not(16 or 64)) {
             throw new ArgumentException("Unsupported block size");
         }
 
+        int[] zigzag;
         int[] table;
         int blockScale;
         if (block.Length == 16) {
+            zigzag = ZigZag4x4BlockScan;
             table = Block4x4Table[tableIdx];
             blockScale = scale;
         } else {
+            zigzag = ZigZag8x8BlockScan;
             table = Block8x8Table[tableIdx];
             blockScale = scale - 2;
         }
 
         for (int i = 0; i < block.Length; i++) {
-            block[i] *= table[i] << blockScale;
+            block[i] *= table[zigzag[i]] << blockScale;
         }
     }
 }
