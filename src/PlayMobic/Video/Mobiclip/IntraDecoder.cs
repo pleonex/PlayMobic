@@ -51,7 +51,7 @@ internal class IntraDecoder
         residualEncoding = new ResidualEncoding(reader, vlcTableIndex, quantizerIndex);
     }
 
-    public void DecodeMacroBlock(MacroBlock macroBlock, bool lumaHasModePerSubBlocks)
+    public void DecodeMacroBlock(YuvBlock macroBlock, bool lumaHasModePerSubBlocks)
     {
         // Data encoded:
         // - block size for prediction
@@ -77,7 +77,7 @@ internal class IntraDecoder
         }
 
         // Split the luma component into 8x8 and process each of them
-        PixelBlock[] lumaBlocks = macroBlock.Luma.Partition(8, 8);
+        ComponentBlock[] lumaBlocks = macroBlock.Luma.Partition(8, 8);
         for (int i = 0; i < lumaBlocks.Length; i++) {
             bool hasResidual = TestBit(residualFlags, i);
             DecodeBlock(lumaBlocks[i], hasResidual, blockMode);
@@ -103,7 +103,7 @@ internal class IntraDecoder
     [MethodImpl(MethodImplOptions.AggressiveInlining)]
     private static bool TestBit(byte flags, int idx) => ((flags >> idx) & 1) == 1;
 
-    private void DecodeBlock(PixelBlock block, bool hasResidual, IntraPredictionBlockMode mode)
+    private void DecodeBlock(ComponentBlock block, bool hasResidual, IntraPredictionBlockMode mode)
     {
         // If it doesn't have residual, then just run prediction on the 8x8 block
         if (!hasResidual) {
@@ -124,7 +124,7 @@ internal class IntraDecoder
         int residualTableIdx = partitionFlag - 1;
         byte hasResidualFlags = CodedBlockPatterns4x4[residualTableIdx];
 
-        PixelBlock[] blocks4x4 = block.Partition(4, 4);
+        ComponentBlock[] blocks4x4 = block.Partition(4, 4);
         for (int i = 0; i < blocks4x4.Length; i++) {
             blockPrediction.PerformBlockPrediction(blocks4x4[i], mode);
 

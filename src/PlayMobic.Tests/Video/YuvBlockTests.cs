@@ -4,16 +4,16 @@ using System.Drawing;
 using PlayMobic.Video;
 
 [TestFixture]
-internal class MacroBlockTests
+internal class YuvBlockTests
 {
     [Test]
     public void ConstructorSetProperties()
     {
-        var expectedY = new PixelBlock(new byte[0], 0, Rectangle.Empty, 1);
-        var expectedU = new PixelBlock(new byte[0], 0, Rectangle.Empty, 2);
-        var expectedV = new PixelBlock(new byte[0], 0, Rectangle.Empty, 3);
+        var expectedY = new ComponentBlock(new byte[0], 0, Rectangle.Empty, 1);
+        var expectedU = new ComponentBlock(new byte[0], 0, Rectangle.Empty, 2);
+        var expectedV = new ComponentBlock(new byte[0], 0, Rectangle.Empty, 3);
 
-        var macroblock = new MacroBlock(expectedY, expectedU, expectedV);
+        var macroblock = new YuvBlock(expectedY, expectedU, expectedV);
 
         Assert.Multiple(() => {
             Assert.That(macroblock.Luma, Is.EqualTo(expectedY));

@@ -14,7 +14,7 @@ internal class MotionCompensationDecoder
         this.huffmanTables = huffmanTables;
     }
 
-    public void Decode(MacroBlock block, int mode)
+    public void DecodeMacroBlock(YuvBlock block, int mode)
     {
         // TODO: vector buffer
 

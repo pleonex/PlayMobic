@@ -102,15 +102,15 @@ internal class FrameYuv420Tests
         int lumaIndex = (1 * 256) + 16 + (2 * 2) + 1;
         int uvIndex = (1 * 256 / 2) + 16 + (2 * 2) + 1;
 
-        PixelBlock lumaBlock = frame.Luma.Partition(16, 16)[1].Partition(2, 2)[2];
+        ComponentBlock lumaBlock = frame.Luma.Partition(16, 16)[1].Partition(2, 2)[2];
         lumaBlock[1, 1] = 42;
         Assert.That(frame.PackedData[lumaIndex], Is.EqualTo(42));
 
-        PixelBlock uBlock = frame.ChromaU.Partition(16, 16)[1].Partition(2, 2)[2];
+        ComponentBlock uBlock = frame.ChromaU.Partition(16, 16)[1].Partition(2, 2)[2];
         uBlock[1, 1] = 0xCA;
         Assert.That(frame.PackedData[startU + uvIndex], Is.EqualTo(0xCA));
 
-        PixelBlock vBlock = frame.ChromaV.Partition(16, 16)[1].Partition(2, 2)[2];
+        ComponentBlock vBlock = frame.ChromaV.Partition(16, 16)[1].Partition(2, 2)[2];
         vBlock[1, 1] = 0xFE;
         Assert.That(frame.PackedData[startV + uvIndex], Is.EqualTo(0xFE));
     }
@@ -121,7 +121,7 @@ internal class FrameYuv420Tests
         var frame = new FrameYuv420(256, 192);
         const int numMacroBlocks = 256 / 16 * (192 / 16);
 
-        MacroBlock[] macroBlocks = frame.GetMacroBlocks();
+        YuvBlock[] macroBlocks = frame.GetMacroBlocks();
 
         Assert.That(macroBlocks.Length, Is.EqualTo(numMacroBlocks));
 

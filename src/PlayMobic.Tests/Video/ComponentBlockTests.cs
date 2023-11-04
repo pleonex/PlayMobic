@@ -4,7 +4,7 @@ using System.Drawing;
 using PlayMobic.Video;
 
 [TestFixture]
-public class PixelBlockTests
+public class ComponentBlockTests
 {
 #pragma warning disable SA1137 // Elements should have the same indentation
     // I know we could generate it, but it helps as a visual guide.
@@ -30,7 +30,7 @@ public class PixelBlockTests
     public void ConstructorSetProperties()
     {
         byte[] data = new byte[8];
-        var block = new PixelBlock(data, 2, new Rectangle(4, 8, 2, 4), 42);
+        var block = new ComponentBlock(data, 2, new Rectangle(4, 8, 2, 4), 42);
 
         Assert.Multiple(() => {
             Assert.That(block.Data, Has.Length.EqualTo(8));
@@ -46,7 +46,7 @@ public class PixelBlockTests
     [Test]
     public void IndexerTopBlock()
     {
-        var block = new PixelBlock(Block4x4.ToArray(), 4, new Rectangle(0, 0, 4, 4), 0);
+        var block = new ComponentBlock(Block4x4.ToArray(), 4, new Rectangle(0, 0, 4, 4), 0);
 
         block[1, 2] = 42;
         Assert.Multiple(() => {
@@ -61,7 +61,7 @@ public class PixelBlockTests
     [Test]
     public void IndexerChildBlock()
     {
-        var block = new PixelBlock(Block4x4.ToArray(), 4, new Rectangle(2, 2, 2, 2), 3);
+        var block = new ComponentBlock(Block4x4.ToArray(), 4, new Rectangle(2, 2, 2, 2), 3);
 
         block[1, 1] = 42;
         Assert.Multiple(() => {
@@ -75,7 +75,7 @@ public class PixelBlockTests
     [Test]
     public void IndexerChildNeighbors()
     {
-        var block = new PixelBlock(Block8x8.ToArray(), 8, new Rectangle(2, 2, 2, 2), 3);
+        var block = new ComponentBlock(Block8x8.ToArray(), 8, new Rectangle(2, 2, 2, 2), 3);
 
         Assert.Multiple(() => {
             Assert.That(block[-1, -1], Is.EqualTo(9));
@@ -102,7 +102,7 @@ public class PixelBlockTests
     [Test]
     public void IndexerChildAtBorderNotAllowTopOrLeft()
     {
-        var block = new PixelBlock(Block8x8.ToArray(), 8, new Rectangle(0, 0, 2, 2), 3);
+        var block = new ComponentBlock(Block8x8.ToArray(), 8, new Rectangle(0, 0, 2, 2), 3);
 
         Assert.Multiple(() => {
             Assert.That(() => block[-1, -1], Throws.InstanceOf<ArgumentOutOfRangeException>());
@@ -116,9 +116,9 @@ public class PixelBlockTests
     public void PartitionOnceSameSides()
     {
         var blockRect = new Rectangle(0, 0, 8, 8);
-        var block = new PixelBlock(Block8x8.ToArray(), 8, blockRect, 3);
+        var block = new ComponentBlock(Block8x8.ToArray(), 8, blockRect, 3);
 
-        PixelBlock[] subBlocks = block.Partition(4, 4);
+        ComponentBlock[] subBlocks = block.Partition(4, 4);
         Assert.That(subBlocks, Has.Length.EqualTo(4));
 
         Assert.Multiple(() => {
@@ -138,10 +138,10 @@ public class PixelBlockTests
     public void PartitionTwice()
     {
         var block1Rect = new Rectangle(0, 0, 8, 8);
-        var block1 = new PixelBlock(Block8x8.ToArray(), 8, block1Rect, 0);
+        var block1 = new ComponentBlock(Block8x8.ToArray(), 8, block1Rect, 0);
 
-        PixelBlock[] blocks2 = block1.Partition(4, 4);
-        PixelBlock[] blocks3 = blocks2[3].Partition(2, 2);
+        ComponentBlock[] blocks2 = block1.Partition(4, 4);
+        ComponentBlock[] blocks3 = blocks2[3].Partition(2, 2);
 
         Assert.That(blocks3, Has.Length.EqualTo(4));
 
@@ -161,9 +161,9 @@ public class PixelBlockTests
     [Test]
     public void PartitionDirectionRightDown()
     {
-        var block = new PixelBlock(Block4x4.ToArray(), 4, new Rectangle(0, 0, 4, 4), 0);
+        var block = new ComponentBlock(Block4x4.ToArray(), 4, new Rectangle(0, 0, 4, 4), 0);
 
-        PixelBlock[] blocks2 = block.Partition(2, 2);
+        ComponentBlock[] blocks2 = block.Partition(2, 2);
         Assert.Multiple(() => {
             Assert.That(blocks2[0].X, Is.EqualTo(0));
             Assert.That(blocks2[0].Y, Is.EqualTo(0));
@@ -186,7 +186,7 @@ public class PixelBlockTests
     [Test]
     public void PartitionNotMultipleThrows()
     {
-        var block = new PixelBlock(Block4x4.ToArray(), 4, new Rectangle(0, 0, 4, 4), 0);
+        var block = new ComponentBlock(Block4x4.ToArray(), 4, new Rectangle(0, 0, 4, 4), 0);
         Assert.Multiple(() => {
             Assert.That(() => block.Partition(2, 3), Throws.ArgumentException);
             Assert.That(() => block.Partition(3, 2), Throws.ArgumentException);
@@ -196,7 +196,7 @@ public class PixelBlockTests
     [Test]
     public void IterateAllBlockPixels()
     {
-        var block = new PixelBlock(Block4x4, 4, new Rectangle(2, 2, 2, 2), 3);
+        var block = new ComponentBlock(Block4x4, 4, new Rectangle(2, 2, 2, 2), 3);
 
         int count = 0;
         foreach ((int x, int y) in block.Iterate()) {

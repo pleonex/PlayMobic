@@ -84,11 +84,11 @@ public class IntraDecoderBlockPredictionTests
 
         // Tested with delta -2
         IntraDecoderBlockPrediction decoder = CreateDecoder(0x00, 0x28);
-        var expectedBlock = new PixelBlock(expected, 8, new Rectangle(0, 0, 8, 8), 0);
+        var expectedBlock = new ComponentBlock(expected, 8, new Rectangle(0, 0, 8, 8), 0);
 
         byte[] frame = new byte[256 * 192];
         new Random(42).NextBytes(frame);
-        var block = new PixelBlock(frame, 256, new Rectangle(8, 8, 8, 8), 3);
+        var block = new ComponentBlock(frame, 256, new Rectangle(8, 8, 8, 8), 3);
         decoder.PerformBlockPrediction(block, IntraPredictionBlockMode.DeltaPlane);
 
         Assert.Multiple(() => {
@@ -122,11 +122,11 @@ public class IntraDecoderBlockPredictionTests
 
         // Tested with delta +2
         IntraDecoderBlockPrediction decoder = CreateDecoder(0x00, 0x20);
-        var expectedBlock = new PixelBlock(expected, 16, new Rectangle(0, 0, 16, 16), 0);
+        var expectedBlock = new ComponentBlock(expected, 16, new Rectangle(0, 0, 16, 16), 0);
 
         byte[] frame = new byte[256 * 192];
         new Random(42).NextBytes(frame);
-        var block = new PixelBlock(frame, 256, new Rectangle(16, 16, 16, 16), 17);
+        var block = new ComponentBlock(frame, 256, new Rectangle(16, 16, 16, 16), 17);
         decoder.PerformBlockPrediction(block, IntraPredictionBlockMode.DeltaPlane);
 
         Assert.Multiple(() => {
@@ -455,9 +455,9 @@ public class IntraDecoderBlockPredictionTests
         };
 
         IntraDecoderBlockPrediction decoder = CreateDecoder(0x00, 0x80);
-        var expectedBlock = new PixelBlock(expected, 4, new Rectangle(0, 0, 4, 4), 0);
+        var expectedBlock = new ComponentBlock(expected, 4, new Rectangle(0, 0, 4, 4), 0);
 
-        var block = new PixelBlock(Block16x16.ToArray(), 16, new Rectangle(0, 0, 4, 4), 0);
+        var block = new ComponentBlock(Block16x16.ToArray(), 16, new Rectangle(0, 0, 4, 4), 0);
         decoder.PerformBlockPrediction(block, IntraPredictionBlockMode.Predicted);
 
         Assert.Multiple(() => {
@@ -490,9 +490,9 @@ public class IntraDecoderBlockPredictionTests
 
     private static void AssertPredictionMode(byte[] expected, IntraPredictionBlockMode mode, byte[] data)
     {
-        PixelBlock block = Create4x4EmptyBlock(4, 4, 5);
+        ComponentBlock block = Create4x4EmptyBlock(4, 4, 5);
         IntraDecoderBlockPrediction decoder = CreateDecoder(data);
-        var expectedBlock = new PixelBlock(expected, 4, new Rectangle(0, 0, 4, 4), 0);
+        var expectedBlock = new ComponentBlock(expected, 4, new Rectangle(0, 0, 4, 4), 0);
 
         decoder.PerformBlockPrediction(block, mode);
 
@@ -505,9 +505,9 @@ public class IntraDecoderBlockPredictionTests
 
     private static void AssertPredictionMode(byte[] expected, IntraPredictionBlockMode mode, int sx, int sy)
     {
-        PixelBlock block = Create4x4EmptyBlock(sx, sy, 0);
+        ComponentBlock block = Create4x4EmptyBlock(sx, sy, 0);
         IntraDecoderBlockPrediction decoder = CreateDecoder();
-        var expectedBlock = new PixelBlock(expected, 4, new Rectangle(0, 0, 4, 4), 0);
+        var expectedBlock = new ComponentBlock(expected, 4, new Rectangle(0, 0, 4, 4), 0);
 
         decoder.PerformBlockPrediction(block, mode);
 
@@ -525,10 +525,10 @@ public class IntraDecoderBlockPredictionTests
         return new IntraDecoderBlockPrediction(reader);
     }
 
-    private static PixelBlock Create4x4EmptyBlock(int startX, int startY, int index)
+    private static ComponentBlock Create4x4EmptyBlock(int startX, int startY, int index)
     {
         // Clone to have the neighbors and then clean it.
-        var block = new PixelBlock(Block16x16.ToArray(), 16, new Rectangle(startX, startY, 4, 4), index);
+        var block = new ComponentBlock(Block16x16.ToArray(), 16, new Rectangle(startX, startY, 4, 4), index);
 
         foreach ((int x, int y) in block.Iterate()) {
             block[x, y] = 0;
@@ -537,10 +537,10 @@ public class IntraDecoderBlockPredictionTests
         return block;
     }
 
-    private static PixelBlock Create8x8EmptyBlock(int startX, int startY, int index)
+    private static ComponentBlock Create8x8EmptyBlock(int startX, int startY, int index)
     {
         // Clone to have the neighbors and then clean it.
-        var block = new PixelBlock(new byte[4 * 16 * 16], 16, new Rectangle(startX, startY, 8, 8), index);
+        var block = new ComponentBlock(new byte[4 * 16 * 16], 16, new Rectangle(startX, startY, 8, 8), index);
 
         foreach ((int x, int y) in block.Iterate()) {
             block[x, y] = 0;

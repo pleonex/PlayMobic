@@ -80,8 +80,8 @@ public class MobiclipDecoder : IVideoDecoder
         var intraDecoder = new IntraDecoder(reader, vlcTableIndex, quantizationIdx);
 
         // Create the macroblocks: luma 16x16, chroma 8x8 and decode each of them.
-        MacroBlock[] macroBlocks = frames.Current.GetMacroBlocks();
-        foreach (MacroBlock macroBlock in macroBlocks) {
+        YuvBlock[] macroBlocks = frames.Current.GetMacroBlocks();
+        foreach (YuvBlock macroBlock in macroBlocks) {
             bool modePerBlock = reader.ReadBoolean();
             intraDecoder.DecodeMacroBlock(macroBlock, modePerBlock);
         }
@@ -94,8 +94,8 @@ public class MobiclipDecoder : IVideoDecoder
 
         var interDecoder = new InterDecoder(reader, pQuantIndex, isVideoStereo);
 
-        MacroBlock[] macroBlocks = frames.Current.GetMacroBlocks();
-        foreach (MacroBlock macroBlock in macroBlocks) {
+        YuvBlock[] macroBlocks = frames.Current.GetMacroBlocks();
+        foreach (YuvBlock macroBlock in macroBlocks) {
             interDecoder.DecodeMacroBlock(macroBlock);
         }
     }

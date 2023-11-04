@@ -3,9 +3,9 @@
 using System;
 using System.Drawing;
 
-internal readonly struct PixelBlock
+internal readonly struct ComponentBlock
 {
-    public PixelBlock(Memory<byte> data, int stride, Rectangle rect, int index)
+    public ComponentBlock(Memory<byte> data, int stride, Rectangle rect, int index)
     {
         Data = data;
         Stride = stride;
@@ -60,7 +60,7 @@ internal readonly struct PixelBlock
         }
     }
 
-    public readonly PixelBlock[] Partition(int blockWidth, int blockHeight)
+    public readonly ComponentBlock[] Partition(int blockWidth, int blockHeight)
     {
         if ((Width % blockWidth) != 0 || (Height % blockHeight) != 0) {
             throw new ArgumentException("Sides must be multiple of current block");
@@ -68,7 +68,7 @@ internal readonly struct PixelBlock
 
         int columnsCount = Width / blockWidth;
         int rowsCount = Height / blockHeight;
-        var blocks = new PixelBlock[columnsCount * rowsCount];
+        var blocks = new ComponentBlock[columnsCount * rowsCount];
 
         // Origin: top-left, starting to the right then down.
         int idx = 0;
@@ -79,7 +79,7 @@ internal readonly struct PixelBlock
                     Y + (r * blockHeight),
                     blockWidth,
                     blockHeight);
-                blocks[idx] = new PixelBlock(Data, Stride, rect, idx);
+                blocks[idx] = new ComponentBlock(Data, Stride, rect, idx);
                 idx++;
             }
         }

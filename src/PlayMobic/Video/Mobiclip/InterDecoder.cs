@@ -31,7 +31,7 @@ internal class InterDecoder
         residualEncoding = new ResidualEncoding(reader, 0, quantizerIndex);
     }
 
-    public void DecodeMacroBlock(MacroBlock macroBlock)
+    public void DecodeMacroBlock(YuvBlock macroBlock)
     {
         int mode = huffmanTables[(16, 16)].ReadCodeword(reader);
         if (mode == 6) {
@@ -39,7 +39,7 @@ internal class InterDecoder
         } else if (mode == 7) {
             intraDecoder.DecodeMacroBlock(macroBlock, true);
         } else {
-            motionDecoder.Decode(macroBlock, mode);
+            motionDecoder.DecodeMacroBlock(macroBlock, mode);
 
             DecodeMacroBlockResidual(macroBlock);
         }
@@ -48,13 +48,13 @@ internal class InterDecoder
     [MethodImpl(MethodImplOptions.AggressiveInlining)]
     private static bool TestBit(byte flags, int idx) => ((flags >> idx) & 1) == 1;
 
-    private void DecodeMacroBlockResidual(MacroBlock macroBlock)
+    private void DecodeMacroBlockResidual(YuvBlock macroBlock)
     {
         // Add residual to each block similar to intra
         int residualIdx = reader.ReadExpGolomb();
         byte residualFlags = CodedBlockPatterns8x8[residualIdx];
 
-        PixelBlock[] lumaBlocks = macroBlock.Luma.Partition(8, 8);
+        ComponentBlock[] lumaBlocks = macroBlock.Luma.Partition(8, 8);
         for (int i = 0; i < lumaBlocks.Length; i++) {
             if (TestBit(residualFlags, i)) {
                 DecodePartitionBlockResidual(lumaBlocks[i]);
@@ -70,7 +70,7 @@ internal class InterDecoder
         }
     }
 
-    private void DecodePartitionBlockResidual(PixelBlock block)
+    private void DecodePartitionBlockResidual(ComponentBlock block)
     {
         int partitionFlag = reader.ReadExpGolomb();
         if (partitionFlag == 0) {
@@ -84,7 +84,7 @@ internal class InterDecoder
         int residualTableIdx = partitionFlag;
         byte hasResidualFlags = CodedBlockPatterns4x4[residualTableIdx];
 
-        PixelBlock[] blocks4x4 = block.Partition(4, 4);
+        ComponentBlock[] blocks4x4 = block.Partition(4, 4);
         for (int i = 0; i < blocks4x4.Length; i++) {
             if (TestBit(hasResidualFlags, i)) {
                 residualEncoding.DecodeAndAddResidual(blocks4x4[i]);

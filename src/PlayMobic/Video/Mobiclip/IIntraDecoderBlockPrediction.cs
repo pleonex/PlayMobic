@@ -2,5 +2,5 @@
 
 internal interface IIntraDecoderBlockPrediction
 {
-    void PerformBlockPrediction(PixelBlock block, IntraPredictionBlockMode mode);
+    void PerformBlockPrediction(ComponentBlock block, IntraPredictionBlockMode mode);
 }

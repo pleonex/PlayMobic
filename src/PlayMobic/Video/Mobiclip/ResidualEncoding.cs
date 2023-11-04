@@ -17,7 +17,7 @@ internal class ResidualEncoding
         entropyVlc = new EntropyVlcEncoding(vlcTableIndex);
     }
 
-    public void DecodeAndAddResidual(PixelBlock block)
+    public void DecodeAndAddResidual(ComponentBlock block)
     {
         // 1. VLC to get residual DC coefficients matrix
         int[] coefficients = entropyVlc.DecodeResidual(reader, block.Width * block.Height);

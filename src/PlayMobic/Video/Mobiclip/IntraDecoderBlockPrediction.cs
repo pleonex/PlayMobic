@@ -22,7 +22,7 @@ internal class IntraDecoderBlockPrediction : IIntraDecoderBlockPrediction
         prevBlockModes = new int[4 * 4];
     }
 
-    public void PerformBlockPrediction(PixelBlock block, IntraPredictionBlockMode mode)
+    public void PerformBlockPrediction(ComponentBlock block, IntraPredictionBlockMode mode)
     {
         if (mode == IntraPredictionBlockMode.Predicted) {
             mode = DecodeBlockMode(block);
@@ -75,7 +75,7 @@ internal class IntraDecoderBlockPrediction : IIntraDecoderBlockPrediction
     }
 
     [SuppressMessage("Style", "IDE0047:Remove unnecessary parentheses", Justification = "Readibility")]
-    internal IntraPredictionBlockMode DecodeBlockMode(PixelBlock block)
+    internal IntraPredictionBlockMode DecodeBlockMode(ComponentBlock block)
     {
         // Only for luma macroblocks (16, 16):
         // As the mode from neighbor blocks are highly correlated, the encoder
@@ -131,7 +131,7 @@ internal class IntraDecoderBlockPrediction : IIntraDecoderBlockPrediction
         return (IntraPredictionBlockMode)predictedMode;
     }
 
-    private static void PredictionVertical(PixelBlock block)
+    private static void PredictionVertical(ComponentBlock block)
     {
         // Copy top neighbor pixel for each column, like H.264
         foreach ((int x, int y) in block.Iterate()) {
@@ -139,7 +139,7 @@ internal class IntraDecoderBlockPrediction : IIntraDecoderBlockPrediction
         }
     }
 
-    private static void PredictionHorizontal(PixelBlock block)
+    private static void PredictionHorizontal(ComponentBlock block)
     {
         // Copy left neighbor pixel for each row, like H.264
         foreach ((int x, int y) in block.Iterate()) {
@@ -147,7 +147,7 @@ internal class IntraDecoderBlockPrediction : IIntraDecoderBlockPrediction
         }
     }
 
-    private static void PredictionDeltaPlane(PixelBlock block, BitReader reader)
+    private static void PredictionDeltaPlane(ComponentBlock block, BitReader reader)
     {
         // shift so it works at bit level
         int SizeAdjust(int value) =>
@@ -192,7 +192,7 @@ internal class IntraDecoderBlockPrediction : IIntraDecoderBlockPrediction
         }
     }
 
-    private static void PredictionDC(PixelBlock block)
+    private static void PredictionDC(ComponentBlock block)
     {
         // Average all top and left neighbor pixels like H.264
         byte average;
@@ -227,7 +227,7 @@ internal class IntraDecoderBlockPrediction : IIntraDecoderBlockPrediction
         }
     }
 
-    private static void PredictionHorizontalUp(PixelBlock block)
+    private static void PredictionHorizontalUp(ComponentBlock block)
     {
         // Horizontal up like H.264
         foreach ((int x, int y) in block.Iterate()) {
@@ -250,7 +250,7 @@ internal class IntraDecoderBlockPrediction : IIntraDecoderBlockPrediction
         }
     }
 
-    private static void PredictionHorizontalDown(PixelBlock block)
+    private static void PredictionHorizontalDown(ComponentBlock block)
     {
         // Horizontal down like H.264
         foreach ((int x, int y) in block.Iterate()) {
@@ -268,7 +268,7 @@ internal class IntraDecoderBlockPrediction : IIntraDecoderBlockPrediction
         }
     }
 
-    private static void PredictionVerticalRight(PixelBlock block)
+    private static void PredictionVerticalRight(ComponentBlock block)
     {
         // Vertical right like H.264
         foreach ((int x, int y) in block.Iterate()) {
@@ -286,7 +286,7 @@ internal class IntraDecoderBlockPrediction : IIntraDecoderBlockPrediction
         }
     }
 
-    private static void PredictionDiagonalDownRight(PixelBlock block)
+    private static void PredictionDiagonalDownRight(ComponentBlock block)
     {
         // Diagonal down right like H.264
         foreach ((int x, int y) in block.Iterate()) {
@@ -300,7 +300,7 @@ internal class IntraDecoderBlockPrediction : IIntraDecoderBlockPrediction
         }
     }
 
-    private static void PredictionVerticalLeft(PixelBlock block)
+    private static void PredictionVerticalLeft(ComponentBlock block)
     {
         // Vertical left like H.264
         foreach ((int x, int y) in block.Iterate()) {
@@ -324,22 +324,22 @@ internal class IntraDecoderBlockPrediction : IIntraDecoderBlockPrediction
         Average(a, b, b, c);
 
     [MethodImpl(MethodImplOptions.AggressiveInlining)]
-    private static byte Average2LeftNeighbors(PixelBlock block, int y) =>
+    private static byte Average2LeftNeighbors(ComponentBlock block, int y) =>
         Average(block[-1, y], block[-1, y + 1]);
 
     [MethodImpl(MethodImplOptions.AggressiveInlining)]
-    private static byte Average3LeftNeighbors(PixelBlock block, int y) =>
+    private static byte Average3LeftNeighbors(ComponentBlock block, int y) =>
         AverageMiddleWeight(block[-1, y - 1], block[-1, y], block[-1, y + 1]);
 
     [MethodImpl(MethodImplOptions.AggressiveInlining)]
-    private static byte Average2TopNeighbors(PixelBlock block, int x) =>
+    private static byte Average2TopNeighbors(ComponentBlock block, int x) =>
     Average(block[x, -1], block[x + 1, -1]);
 
     [MethodImpl(MethodImplOptions.AggressiveInlining)]
-    private static byte Average3TopNeighbors(PixelBlock block, int x) =>
+    private static byte Average3TopNeighbors(ComponentBlock block, int x) =>
         AverageMiddleWeight(block[x - 1, -1], block[x, -1], block[x + 1, -1]);
 
     [MethodImpl(MethodImplOptions.AggressiveInlining)]
-    private static byte AverageCorner(PixelBlock block) =>
+    private static byte AverageCorner(ComponentBlock block) =>
         AverageMiddleWeight(block[-1, 0], block[-1, -1], block[0, -1]);
 }
