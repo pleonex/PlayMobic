@@ -22,4 +22,8 @@
     <ProjectReference Include="..\PlayMobic\PlayMobic.csproj" />
   </ItemGroup>
 
+  <ItemGroup>
+    <Content Include="Resources\**\*" CopyToOutputDirectory="PreserveNewest" />
+  </ItemGroup>
+
 </Project>
