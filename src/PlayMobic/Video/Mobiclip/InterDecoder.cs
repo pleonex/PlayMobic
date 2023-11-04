@@ -22,12 +22,12 @@ internal class InterDecoder
     private readonly IntraDecoder intraDecoder;
     private readonly ResidualEncoding residualEncoding;
 
-    public InterDecoder(BitReader reader, int quantizerIndex, bool isStereo)
+    public InterDecoder(BitReader reader, FramesBuffer<FrameYuv420> previousFrames, int quantizerIndex, bool isStereo)
     {
         this.reader = reader;
         huffmanTables = isStereo ? HuffmanMotionModeTables.StereoVideoTables : HuffmanMotionModeTables.Tables;
         intraDecoder = new IntraDecoder(reader, 0, quantizerIndex);
-        motionDecoder = new MotionCompensationDecoder(reader, huffmanTables);
+        motionDecoder = new MotionCompensationDecoder(reader, previousFrames, huffmanTables);
         residualEncoding = new ResidualEncoding(reader, 0, quantizerIndex);
     }
 
@@ -35,12 +35,13 @@ internal class InterDecoder
     {
         int mode = huffmanTables[(16, 16)].ReadCodeword(reader);
         if (mode == 6) {
+            motionDecoder.SkipMacroBlock(macroBlock);
             intraDecoder.DecodeMacroBlock(macroBlock, false);
         } else if (mode == 7) {
+            motionDecoder.SkipMacroBlock(macroBlock);
             intraDecoder.DecodeMacroBlock(macroBlock, true);
         } else {
             motionDecoder.DecodeMacroBlock(macroBlock, mode);
-
             DecodeMacroBlockResidual(macroBlock);
         }
     }

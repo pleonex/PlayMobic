@@ -43,6 +43,11 @@ public class FrameYuv420
 
     internal ComponentBlock ChromaV { get; }
 
+    internal YuvBlock GetFrameBlock()
+    {
+        return new YuvBlock(Luma, ChromaU, ChromaV);
+    }
+
     internal YuvBlock[] GetMacroBlocks()
     {
         ComponentBlock[] lumaBlocks = Luma.Partition(16, 16);
