@@ -1,4 +1,5 @@
 ﻿using System.CommandLine;
+using System.Diagnostics;
 using PlayMobic.Containers;
 using PlayMobic.Containers.Mods;
 using PlayMobic.Video;
@@ -95,11 +96,6 @@ void ExtractFrames(FileInfo videoFile, string outputPath)
     // This work because video is always the first stream in the packets
     // and we don't need to decode audio to advance to next frame.
     foreach (MediaPacket framePacket in demuxer.ReadFrames().OfType<VideoPacket>()) {
-        if (!framePacket.IsKeyFrame) {
-            // not supported yet
-            continue;
-        }
-
         FrameYuv420 frame = videoDecoder.DecodeFrame(framePacket.Data);
 
         byte[] rgbFrame = ColorSpaceConverter.YCoCg2Rgb32(frame);
@@ -122,12 +118,19 @@ void Demux(FileInfo videoFile, string outputPath)
 
     Console.WriteLine("Video: {0}", videoFile.FullName);
     Console.WriteLine("Output video: {0}", videoPath);
+    Stopwatch watch = Stopwatch.StartNew();
 
     using Node videoNode = NodeFactory.FromFile(videoFile.FullName, FileOpenMode.Read)
         .TransformWith<Binary2Mods>();
 
     ModsVideo video = videoNode.GetFormatAs<ModsVideo>()!;
     ModsInfo info = video.Info;
+    Console.WriteLine("  Resolution: {0}x{1}", info.Width, info.Height);
+    Console.WriteLine("  Duration: {0} frames, {1}", info.FramesCount, info.Duration);
+    Console.WriteLine("  Frames per second: {0}", info.FramesPerSecond);
+
+    int framesCount = info.FramesCount;
+    int frame5Percentage = 5 * framesCount / 100;
 
     var videoDecoder = new MobiclipDecoder(info.Width, info.Height);
     using DataStream videoStream = DataStreamFactory.FromFile(videoPath, FileOpenMode.Write);
@@ -136,13 +139,23 @@ void Demux(FileInfo videoFile, string outputPath)
     foreach (MediaPacket framePacket in demuxer.ReadFrames()) {
         if (framePacket is VideoPacket) {
             FrameYuv420 frame = videoDecoder.DecodeFrame(framePacket.Data);
+
+            // ffmpeg YCoCg is bugged, transform to YCbCr
+            if (frame.ColorSpace is YuvColorSpace.YCoCg) {
+                frame = ColorSpaceConverter.YCoCg2YCbCr(frame);
+            }
+
             videoStream.Write(frame.PackedData);
-            Console.Write('+');
+
+            if (framePacket.FrameCount % frame5Percentage == 0) {
+                Console.Write("\rDecoding... {0}%   ", 100 * framePacket.FrameCount / framesCount);
+            }
         } else {
             // TODO: decode audio
         }
     }
 
-    Console.WriteLine();
-    Console.WriteLine("Done");
+    watch.Stop();
+    Console.WriteLine("\rDecoding... 100%");
+    Console.WriteLine("Done in {0} ({1} fps)", watch.Elapsed, framesCount / watch.Elapsed.TotalSeconds);
 }
