@@ -93,11 +93,9 @@ internal class MotionCompensationDecoder
         int newLumaHeight = partitions[0].Luma.Height;
         Huffman huffmanTable = huffmanTables[(newLumaWidth, newLumaHeight)];
 
-        // Read the partitions mode encoded with huffman
-        int partitionsMode = huffmanTable.ReadCodeword(reader);
-
         // Re-run motion compensation algorithm on each partition.
         foreach (YuvBlock partition in partitions) {
+            int partitionsMode = huffmanTable.ReadCodeword(reader);
             DecodeBlock(partition, partitionsMode, macroBlockIndex);
         }
     }
@@ -118,7 +116,7 @@ internal class MotionCompensationDecoder
         CopyMovingYuvBlock(block, src, vector);
     }
 
-    private void CopyMovingYuvBlock(YuvBlock dstBlock, YuvBlock srcFrame, Vector2D vector)
+    private void CopyMovingYuvBlock(YuvBlock dstBlock, YuvBlock srcFrame, Vector2D delta)
     {
         ComponentBlock dstLuma = dstBlock.Luma;
         ComponentBlock dstChromaU = dstBlock.ChromaU;
@@ -126,30 +124,33 @@ internal class MotionCompensationDecoder
 
         for (int y = 0; y < dstBlock.Luma.Height; y++) {
             for (int x = 0; x < dstBlock.Luma.Width; x++) {
-                int srcLumaX = dstLuma.X + x + vector.X;
-                int srcLumaY = dstLuma.Y + y + vector.Y;
-                dstLuma[x, y] = GetHalfPelComponent(srcFrame.Luma, srcLumaX, srcLumaY);
+                int srcLumaX = dstLuma.X + x;
+                int srcLumaY = dstLuma.Y + y;
+                dstLuma[x, y] = GetHalfPelComponent(srcFrame.Luma, srcLumaX, srcLumaY, delta);
 
                 // Because of YUV 4:2:0 downsampling we divide by 2 and do it half of time
                 if ((x % 2) == 0 && (y % 2) == 0) {
-                    int dstChromaX = dstChromaU.X + (x / 2) + (vector.X / 2);
-                    int dstChromaY = dstChromaU.Y + (y / 2) + (vector.Y / 2);
-                    dstChromaU[x / 2, y / 2] = GetHalfPelComponent(srcFrame.ChromaU, dstChromaX, dstChromaY);
-                    dstChromaV[x / 2, y / 2] = GetHalfPelComponent(srcFrame.ChromaV, dstChromaX, dstChromaY);
+                    var chromaDelta = new Vector2D(delta.X / 2, delta.Y / 2);
+                    int dstChromaX = dstChromaU.X + (x / 2);
+                    int dstChromaY = dstChromaU.Y + (y / 2);
+                    dstChromaU[x / 2, y / 2] = GetHalfPelComponent(srcFrame.ChromaU, dstChromaX, dstChromaY, chromaDelta);
+                    dstChromaV[x / 2, y / 2] = GetHalfPelComponent(srcFrame.ChromaV, dstChromaX, dstChromaY, chromaDelta);
                 }
             }
         }
     }
 
-    private byte GetHalfPelComponent(ComponentBlock block, int x, int y)
+    private byte GetHalfPelComponent(ComponentBlock block, int x, int y, Vector2D delta)
     {
         // Actual positions are multiplied by two, so we can have half-pixel positions
         // without storing decimals.
-        bool isExactX = (x % 2) == 0;
-        bool isExactY = (y % 2) == 0;
+        bool isExactX = (delta.X % 2) == 0;
+        bool isExactY = (delta.Y % 2) == 0;
 
-        x /= 2;
-        y /= 2;
+        // We divide with bitwise shifting (same as /2) because when it's -1
+        // shifting 1, gives still -1 rather than 0 (it propages sign so it's still negative).
+        x += delta.X >> 1;
+        y += delta.Y >> 1;
 
         if (isExactX && isExactY) {
             return block[x, y];

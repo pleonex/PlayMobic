@@ -19,7 +19,7 @@ internal readonly struct YuvBlock
     {
         ComponentBlock[] lumas = Luma.Partition(Luma.Width / widthDiv, Luma.Height / heightDiv);
         ComponentBlock[] chromaUs = ChromaU.Partition(ChromaU.Width / widthDiv, ChromaU.Height / heightDiv);
-        ComponentBlock[] chromaVs = ChromaU.Partition(ChromaV.Width / widthDiv, ChromaV.Height / heightDiv);
+        ComponentBlock[] chromaVs = ChromaV.Partition(ChromaV.Width / widthDiv, ChromaV.Height / heightDiv);
 
         var partitions = new YuvBlock[lumas.Length];
         for (int i = 0; i < lumas.Length; i++) {
