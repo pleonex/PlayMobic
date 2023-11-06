@@ -62,13 +62,15 @@ public class BitReader
 
     public int ReadSigned(int length)
     {
-        int sign = (Read(1) == 1) ? -1 : 0;
+        int value = Read(length);
+
+        int sign = (value >> (length - 1)) == 1 ? -1 : 0;
         sign <<= length - 1;
 
         // We can't multiply because it would do two's complement, we just want
         // to set all bits to 1. Shifting a SIGNED int will do that
-        int value = Read(length - 1);
-        value |= sign;
+        int mask = (1 << (length - 1)) - 1;
+        value = (value & mask) | sign;
 
         return value;
     }

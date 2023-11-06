@@ -1,10 +1,5 @@
 ﻿namespace PlayMobic.Audio;
 
-using System;
-using System.Collections.Generic;
-using System.Linq;
-using System.Text;
-using System.Threading.Tasks;
 using Yarhl.IO;
 
 /// <summary>
@@ -12,12 +7,14 @@ using Yarhl.IO;
 /// </summary>
 public class ImaAdpcmDecoder
 {
-    private static readonly int[] IndexTable = new int[16] {
-        -1, -1, -1, -1, 2, 4, 6, 8,
+    private const int SamplesPerBlock = 256;
+
+    private static readonly int[] StepIndexTable = new int[8] {
         -1, -1, -1, -1, 2, 4, 6, 8,
     };
 
-    private static readonly short[] StepsizeTable = new short[89] {
+    // step(n+1) = step(n) * 1.1M(L(n))
+    private static readonly short[] StepTable = new short[89] {
         7, 8, 9, 10, 11, 12, 13, 14,
         16, 17, 19, 21, 23, 25, 28,
         31, 34, 37, 41, 45, 50, 55,
@@ -32,88 +29,62 @@ public class ImaAdpcmDecoder
         18500, 20350, 22385, 24623, 27086, 29794, 32767
     };
 
-    private int index = 0;
-    private int lastSample = 0;
+    private readonly byte[] output = new byte[SamplesPerBlock * 2];  // 16-bits PCM
+    private int stepIndex;
+    private int predictor;
 
     public byte[] Decode(Stream data, bool isCompleteBlock)
     {
-        var reader = new DataReader(data);
         data.Position = 0;
 
-        int numSamples = (int)(isCompleteBlock ? data.Length - 4 : data.Length) * 2; // 4bps
-        int outputSize = numSamples * 2; // 16-bits PCM
-        byte[] outputBuffer = new byte[outputSize];
-        using DataStream output = DataStreamFactory.FromArray(outputBuffer);
-        var writer = new DataWriter(output);
+        using DataStream outputStream = DataStreamFactory.FromArray(output);
+        var writer = new DataWriter(outputStream);
 
         if (isCompleteBlock) {
-            index = reader.ReadUInt16();
-            lastSample = reader.ReadUInt16();
+            var headerReader = new DataReader(data);
+            stepIndex = headerReader.ReadUInt16();
+            predictor = headerReader.ReadInt16();
         }
 
-        if (index < 0) {
-            index = 0;
-        } else if (index >= StepsizeTable.Length) {
-            index = StepsizeTable.Length - 1;
+        for (int i = 0; i < SamplesPerBlock; i += 2) {
+            int value = data.ReadByte();
+
+            short sample0 = DecodeSample(value & 0x0F);
+            writer.Write(sample0);
+
+            short sample1 = DecodeSample(value >> 4);
+            writer.Write(sample1);
         }
 
-        short stepsize = StepsizeTable[index];
+        return output;
+    }
 
-        int difference;
-        int newSample = lastSample;
+    private short DecodeSample(int data)
+    {
+        short step = StepTable[stepIndex];
 
-        byte bitsBuffer = 0;
-        int bitsRead = 0;
-        while (data.Position != data.Length || bitsRead > 0) {
-            if (bitsRead == 0) {
-                bitsBuffer = reader.ReadByte();
-                bitsRead = 8;
-            }
-
-            byte value = (byte)(bitsBuffer & 0x0F);
-            bitsBuffer >>= 4;
-            bitsRead -= 4;
-
-            difference = stepsize >> 3;
-            if ((value & 4) != 0) {
-                difference += stepsize;
-            }
-
-            if ((value & 2) != 0) {
-                difference += stepsize >> 1;
-            }
-
-            if ((value & 1) != 0) {
-                difference += stepsize >> 2;
-            }
-
-
-            if ((value & 8) != 0) {
-                difference = -difference;
-            }
-
-            newSample += difference;
-
-            if (newSample > short.MaxValue) {
-                newSample = short.MaxValue;
-            } else if (newSample < short.MinValue) {
-                newSample = short.MinValue;
-            }
-
-            writer.Write((short)newSample);
-
-            index += IndexTable[value];
-            if (index < 0) {
-                index = 0;
-            } else if (index >= StepsizeTable.Length) {
-                index = StepsizeTable.Length - 1;
-            }
-
-            stepsize = StepsizeTable[index];
+        int diff = step >> 3;
+        if ((data & 4) != 0) {
+            diff += step;
         }
 
-        lastSample = newSample;
+        if ((data & 2) != 0) {
+            diff += step >> 1;
+        }
 
-        return outputBuffer;
+        if ((data & 1) != 0) {
+            diff += step >> 2;
+        }
+
+        if ((data & 8) != 0) {
+            diff = -diff;
+        }
+
+        predictor += diff;
+
+        stepIndex += StepIndexTable[data & 7];
+        stepIndex = Math.Clamp(stepIndex, 0, StepTable.Length - 1);
+
+        return (short)Math.Clamp(predictor, short.MinValue, short.MaxValue);
     }
 }
