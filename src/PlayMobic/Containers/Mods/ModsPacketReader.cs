@@ -63,16 +63,31 @@ public sealed class ModsPacketReader : IDemuxerPacketReader<MediaPacket>
             ReadNextPacket();
             packetOffset = 0;
         } else {
-            packetOffset = Current.Data.Position;
+            packetStream!.Position += Current.Data.Position;
+
+            if (container.Info.ContainerFormatId == "N3" && currentIsKeyFrame && currentPacketStream == 1) {
+                packetStream!.Position += 4; // ??
+            }
+
+            packetOffset = packetStream!.Position;
         }
 
         Current?.Dispose();
 
         var streamData = new DataStream(packetStream!, packetOffset, packetStream!.Length - packetOffset);
 
-        Current = (currentPacketStream == 0)
-            ? new VideoPacket(currentPacketStream, streamData, currentIsKeyFrame, currentFrame)
-            : new AudioPacket(currentPacketStream, currentPacketStream - 1, streamData, currentIsKeyFrame, currentFrame);
+        // Video goes first
+        if (currentPacketStream == 0) {
+            Current = new VideoPacket(currentPacketStream, streamData, currentIsKeyFrame, currentFrame);
+        } else {
+            // There is a block per audio channel and they are mix.
+            int audioBlockCount = currentPacketStream - 1;
+            int audioTrackId = audioBlockCount % container.Info.AudioChannelsCount;
+
+            // Only the first block for each channel has the header for IMA-ADPCM
+            bool audioKeyBlock = currentIsKeyFrame && audioBlockCount < container.Info.AudioChannelsCount;
+            Current = new AudioPacket(currentPacketStream, audioTrackId, streamData, audioKeyBlock, currentFrame);
+        }
 
         currentPacketStream++;
         return true;

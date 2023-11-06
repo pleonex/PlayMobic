@@ -130,6 +130,7 @@ internal class MotionCompensationDecoder
 
                 // Because of YUV 4:2:0 downsampling we divide by 2 and do it half of time
                 if ((x % 2) == 0 && (y % 2) == 0) {
+                    // shifting instead of regular division is important for rounding.
                     var chromaDelta = new Vector2D(delta.X >> 1, delta.Y >> 1);
                     int dstChromaX = dstChromaU.X + (x / 2);
                     int dstChromaY = dstChromaU.Y + (y / 2);
@@ -147,8 +148,8 @@ internal class MotionCompensationDecoder
         bool isExactX = (delta.X % 2) == 0;
         bool isExactY = (delta.Y % 2) == 0;
 
-        // We divide with bitwise shifting (same as /2) because when it's -1
-        // shifting 1, gives still -1 rather than 0 (it propages sign so it's still negative).
+        // We divide with bitwise shifting (same as / 2) because of
+        // how rounding works. Same for the operations below.
         x += delta.X >> 1;
         y += delta.Y >> 1;
 

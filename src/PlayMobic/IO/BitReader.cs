@@ -28,6 +28,8 @@ public class BitReader
 
     public DataStream Stream => reader.Stream;
 
+    public bool EndOfStream => (bufferLength == 0) && Stream.EndOfStream;
+
     public EndiannessMode Endianness { get; }
 
     public long BitPosition { get; private set; }

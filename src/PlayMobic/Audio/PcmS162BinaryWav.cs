@@ -1,15 +1,15 @@
-﻿namespace PlayMobic.Tool;
+﻿namespace PlayMobic.Audio;
 
 using Yarhl.FileFormat;
 using Yarhl.IO;
 
-public class RawPcm162BinaryWav : IConverter<IBinary, BinaryFormat>
+public class PcmS162BinaryWav : IConverter<IBinary, BinaryFormat>
 {
     private readonly int channels;
     private readonly int sampleRate;
     private readonly int bitsPerSample;
 
-    public RawPcm162BinaryWav(int channels, int sampleRate, int bitsPerSample)
+    public PcmS162BinaryWav(int channels, int sampleRate, int bitsPerSample)
     {
         this.channels = channels;
         this.sampleRate = sampleRate;
@@ -30,7 +30,7 @@ public class RawPcm162BinaryWav : IConverter<IBinary, BinaryFormat>
 
         // Sub-chunk 'fmt'
         writer.Write("fmt ", nullTerminator: false);
-        writer.Write(16);             // Sub-chunk size
+        writer.Write(16);           // Sub-chunk size
         writer.Write((ushort)1);    // Audio format
         writer.Write((ushort)channels);
         writer.Write(sampleRate);

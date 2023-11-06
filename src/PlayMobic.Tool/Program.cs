@@ -1,5 +1,6 @@
 ﻿using System.CommandLine;
 using System.Diagnostics;
+using PlayMobic.Audio;
 using PlayMobic.Containers;
 using PlayMobic.Containers.Mods;
 using PlayMobic.Video;
@@ -115,25 +116,28 @@ void ExtractFrames(FileInfo videoFile, string outputPath)
 void Demux(FileInfo videoFile, string outputPath)
 {
     string videoPath = Path.Combine(outputPath, videoFile.Name + ".rawvideo");
+    string audioPath = Path.Combine(outputPath, videoFile.Name + ".rawaudio");
 
     Console.WriteLine("Video: {0}", videoFile.FullName);
     Console.WriteLine("Output video: {0}", videoPath);
-    Stopwatch watch = Stopwatch.StartNew();
+    PrintInfo(videoFile);
+    var watch = Stopwatch.StartNew();
 
     using Node videoNode = NodeFactory.FromFile(videoFile.FullName, FileOpenMode.Read)
         .TransformWith<Binary2Mods>();
 
     ModsVideo video = videoNode.GetFormatAs<ModsVideo>()!;
     ModsInfo info = video.Info;
-    Console.WriteLine("  Resolution: {0}x{1}", info.Width, info.Height);
-    Console.WriteLine("  Duration: {0} frames, {1}", info.FramesCount, info.Duration);
-    Console.WriteLine("  Frames per second: {0}", info.FramesPerSecond);
 
     int framesCount = info.FramesCount;
     int frame5Percentage = 5 * framesCount / 100;
 
     var videoDecoder = new MobiclipDecoder(info.Width, info.Height);
     using DataStream videoStream = DataStreamFactory.FromFile(videoPath, FileOpenMode.Write);
+
+    ImaAdpcmDecoder[] audioDecoders = Enumerable.Range(0, info.AudioChannelsCount).Select(_ => new ImaAdpcmDecoder()).ToArray();
+    using var audioInterleaveBuffer = new DataStream();
+    using DataStream audioStream = DataStreamFactory.FromFile(audioPath, FileOpenMode.Write);
 
     var demuxer = new ModsDemuxer(video);
     foreach (MediaPacket framePacket in demuxer.ReadFrames()) {
@@ -146,12 +150,18 @@ void Demux(FileInfo videoFile, string outputPath)
             }
 
             videoStream.Write(frame.PackedData);
+        } else if (framePacket is AudioPacket audioPacket) {
+            byte[] channelData = audioDecoders[audioPacket.TrackIndex].Decode(audioPacket.Data, audioPacket.IsKeyFrame);
+            audioInterleaveBuffer.Write(channelData);
 
-            if (framePacket.FrameCount % frame5Percentage == 0) {
-                Console.Write("\rDecoding... {0}%   ", 100 * framePacket.FrameCount / framesCount);
+            if (audioPacket.TrackIndex + 1 == info.AudioChannelsCount) {
+                audioStream.WriteInterleavedPCM16(audioInterleaveBuffer, info.AudioChannelsCount);
+                audioInterleaveBuffer.Position = 0;
             }
-        } else {
-            // TODO: decode audio
+        }
+
+        if (framePacket.FrameCount % frame5Percentage == 0) {
+            Console.Write("\rDecoding... {0}%   ", 100 * framePacket.FrameCount / framesCount);
         }
     }
 
