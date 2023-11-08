@@ -62,6 +62,11 @@ void PrintInfo(FileInfo videoFile)
         .TransformWith<Binary2Mods>();
 
     ModsVideo video = videoNode.GetFormatAs<ModsVideo>()!;
+    PrintVideoInfo(video);
+}
+
+void PrintVideoInfo(ModsVideo video)
+{
     ModsInfo info = video.Info;
 
     Console.WriteLine("  Container format: {0}", info.ContainerFormatId);
@@ -99,6 +104,10 @@ void ExtractFrames(FileInfo videoFile, string outputPath)
     foreach (MediaPacket framePacket in demuxer.ReadFrames().OfType<VideoPacket>()) {
         FrameYuv420 frame = videoDecoder.DecodeFrame(framePacket.Data);
 
+        if (frame.ColorSpace is not YuvColorSpace.YCoCg) {
+            throw new NotSupportedException("Unsupported colorspace");
+        }
+
         byte[] rgbFrame = ColorSpaceConverter.YCoCg2Rgb32(frame);
         var frameImage = new FullImage(frame.Width, frame.Height) {
             Pixels = Rgb32.Instance.Decode(rgbFrame),
@@ -115,57 +124,61 @@ void ExtractFrames(FileInfo videoFile, string outputPath)
 
 void Demux(FileInfo videoFile, string outputPath)
 {
-    string videoPath = Path.Combine(outputPath, videoFile.Name + ".rawvideo");
-    string audioPath = Path.Combine(outputPath, videoFile.Name + ".rawaudio");
+    string videoPath = Path.GetFullPath(Path.Combine(outputPath, videoFile.Name + ".rawvideo"));
+    string audioPath = Path.GetFullPath(Path.Combine(outputPath, videoFile.Name + ".rawaudio"));
 
-    Console.WriteLine("Video: {0}", videoFile.FullName);
+    Console.WriteLine("Input: {0}", videoFile.FullName);
     Console.WriteLine("Output video: {0}", videoPath);
-    PrintInfo(videoFile);
-    var watch = Stopwatch.StartNew();
+    Console.WriteLine("Output audio: {0}", audioPath);
 
     using Node videoNode = NodeFactory.FromFile(videoFile.FullName, FileOpenMode.Read)
         .TransformWith<Binary2Mods>();
 
     ModsVideo video = videoNode.GetFormatAs<ModsVideo>()!;
-    ModsInfo info = video.Info;
+    PrintVideoInfo(video);
 
-    int framesCount = info.FramesCount;
+    int framesCount = video.Info.FramesCount;
     int frame5Percentage = 5 * framesCount / 100;
 
-    var videoDecoder = new MobiclipDecoder(info.Width, info.Height);
-    using DataStream videoStream = DataStreamFactory.FromFile(videoPath, FileOpenMode.Write);
-
-    ImaAdpcmDecoder[] audioDecoders = Enumerable.Range(0, info.AudioChannelsCount).Select(_ => new ImaAdpcmDecoder()).ToArray();
-    using var audioInterleaveBuffer = new DataStream();
-    using DataStream audioStream = DataStreamFactory.FromFile(audioPath, FileOpenMode.Write);
-
-    var demuxer = new ModsDemuxer(video);
-    foreach (MediaPacket framePacket in demuxer.ReadFrames()) {
-        if (framePacket is VideoPacket) {
-            FrameYuv420 frame = videoDecoder.DecodeFrame(framePacket.Data);
-
-            // ffmpeg YCoCg is bugged, transform to YCbCr
-            if (frame.ColorSpace is YuvColorSpace.YCoCg) {
-                frame = ColorSpaceConverter.YCoCg2YCbCr(frame);
-            }
-
-            videoStream.Write(frame.PackedData);
-        } else if (framePacket is AudioPacket audioPacket) {
-            byte[] channelData = audioDecoders[audioPacket.TrackIndex].Decode(audioPacket.Data, audioPacket.IsKeyFrame);
-            audioInterleaveBuffer.Write(channelData);
-
-            if (audioPacket.TrackIndex + 1 == info.AudioChannelsCount) {
-                audioStream.WriteInterleavedPCM16(audioInterleaveBuffer, info.AudioChannelsCount);
-                audioInterleaveBuffer.Position = 0;
-            }
+    var mods2RawStreams = new Mods2RawContainer(convertYCbCr: true);
+    mods2RawStreams.ProgressUpdate += (_, e) => {
+        if ((e % frame5Percentage) == 0) {
+            Console.Write("\rDecoding... {0} / {1} ({2:P2})", e, framesCount, (double)e / framesCount);
         }
+    };
 
-        if (framePacket.FrameCount % frame5Percentage == 0) {
-            Console.Write("\rDecoding... {0}%   ", 100 * framePacket.FrameCount / framesCount);
-        }
+    var watch = Stopwatch.StartNew();
+    using NodeContainerFormat outputs = mods2RawStreams.Convert(video);
+    watch.Stop();
+
+    outputs.Root.Children["video"]!.Stream!.WriteTo(videoPath);
+    if (video.Info.AudioChannelsCount > 0) {
+        outputs.Root.Children["audio"]!.Stream!.WriteTo(audioPath);
     }
 
-    watch.Stop();
-    Console.WriteLine("\rDecoding... 100%");
-    Console.WriteLine("Done in {0} ({1} fps)", watch.Elapsed, framesCount / watch.Elapsed.TotalSeconds);
+    Console.WriteLine("\rDone in {0} ({1:F1} fps)", watch.Elapsed, framesCount / watch.Elapsed.TotalSeconds);
+
+    Console.WriteLine();
+    Console.WriteLine("Use the following ffmpeg command to convert to MP4:");
+
+    Console.Write("ffmpeg ");
+    if (video.Info.AudioChannelsCount > 0) {
+        Console.Write(
+            "-f s16le -channel_layout {0} -ar {1} -ac {2} -i {3} ",
+            video.Info.AudioChannelsCount > 1 ? "stereo" : "mono",
+            video.Info.AudioFrequency,
+            video.Info.AudioChannelsCount,
+            Path.GetFileName(audioPath));
+    }
+
+    Console.Write(
+        "-f rawvideo -pix_fmt yuv420p -r {0:F1} -s {1}x{2} -i {3} ",
+        video.Info.FramesPerSecond,
+        video.Info.Width,
+        video.Info.Height,
+        Path.GetFileName(videoPath));
+    Console.WriteLine(
+        "-y -hide_banner -ac {0} {1}.mp4",
+        video.Info.AudioChannelsCount,
+        Path.GetFileNameWithoutExtension(videoFile.Name));
 }

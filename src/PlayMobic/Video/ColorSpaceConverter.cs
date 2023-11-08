@@ -30,15 +30,20 @@ public static class ColorSpaceConverter
         return rgb;
     }
 
-    public static FrameYuv420 YCoCg2YCbCr(FrameYuv420 source)
+    public static void YCoCg2YCbCr(FrameYuv420 source, FrameYuv420 output)
     {
-        var ycbcr = new FrameYuv420(source.Width, source.Height);
-        ycbcr.ColorSpace = YuvColorSpace.YCbCr;
+        if (source.Width != output.Width || source.Height != output.Height) {
+            throw new ArgumentException("Invalid output size");
+        }
 
-        ComponentBlock dstLuma = ycbcr.Luma;
-        ComponentBlock dstChromaU = ycbcr.ChromaU;
-        ComponentBlock dstChromaV = ycbcr.ChromaV;
+        output.ColorSpace = YuvColorSpace.YCbCr;
 
+        ComponentBlock dstLuma = output.Luma;
+        ComponentBlock dstChromaU = output.ChromaU;
+        ComponentBlock dstChromaV = output.ChromaV;
+
+        // From Mobius:
+        // https://github.com/AdibSurani/Mobius/blob/f71ddc69f374a8ff6d899efd4dcaf3858af63bf7/Mobius/MobiDecoder.cs#L132
         for (int y = 0; y < source.Height; y++) {
             for (int x = 0; x < source.Width; x++) {
                 dstLuma[x, y] = ClampByte(source.Luma[x, y] * 0.859);
@@ -51,8 +56,6 @@ public static class ColorSpaceConverter
                 }
             }
         }
-
-        return ycbcr;
     }
 
     [MethodImpl(MethodImplOptions.AggressiveInlining)]

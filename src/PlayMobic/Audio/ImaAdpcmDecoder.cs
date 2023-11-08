@@ -5,7 +5,7 @@ using Yarhl.IO;
 /// <summary>
 /// Decode 4-bits IMA-ADPCM binary data into PCM 16-bits wave samples.
 /// </summary>
-public class ImaAdpcmDecoder
+public class ImaAdpcmDecoder : IAudioDecoder
 {
     private const int SamplesPerBlock = 256;
 
@@ -63,6 +63,7 @@ public class ImaAdpcmDecoder
     {
         short step = StepTable[stepIndex];
 
+        // Optimization of: (data + 1/2) * step/4
         int diff = step >> 3;
         if ((data & 4) != 0) {
             diff += step;
