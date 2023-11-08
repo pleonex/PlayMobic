@@ -14,6 +14,7 @@ using Yarhl.IO;
 return await new RootCommand("Tool for MODS videos") {
     SetupInfoCommand(),
     SetupExtraFramesCommand(),
+    SetupMods2AviCommand(),
     SetupDemuxCommand(),
 }.InvokeAsync(args);
 
@@ -41,11 +42,24 @@ Command SetupExtraFramesCommand()
     return command;
 }
 
+Command SetupMods2AviCommand()
+{
+    var inputArg = new Option<FileInfo>("--input", "Path to the .mods file") { IsRequired = true };
+    var outputArg = new Option<string>("--output", "Path to the file output AVI file") { IsRequired = true };
+    var command = new Command("mods2avi", "Convert a MODS video into an AVI file") {
+        inputArg,
+        outputArg,
+    };
+    command.SetHandler(Mods2Avi, inputArg, outputArg);
+
+    return command;
+}
+
 Command SetupDemuxCommand()
 {
     var inputArg = new Option<FileInfo>("--input", "Path to the .mods file") { IsRequired = true };
     var outputArg = new Option<string>("--output", "Path to the folder to write the streams") { IsRequired = true };
-    var command = new Command("demux", "Extract each video and audio streams") {
+    var command = new Command("demux", "Extract and decode each video and audio streams") {
         inputArg,
         outputArg,
     };
@@ -97,6 +111,7 @@ void ExtractFrames(FileInfo videoFile, string outputPath)
 
     var demuxer = new ModsDemuxer(video);
     var videoDecoder = new MobiclipDecoder(info.Width, info.Height);
+    byte[] rgbFrame = new byte[info.Width * info.Height * 4];
     var image2BinaryBitmap = new FullImage2Bitmap();
 
     // This work because video is always the first stream in the packets
@@ -108,7 +123,7 @@ void ExtractFrames(FileInfo videoFile, string outputPath)
             throw new NotSupportedException("Unsupported colorspace");
         }
 
-        byte[] rgbFrame = ColorSpaceConverter.YCoCg2Rgb32(frame);
+        ColorSpaceConverter.YCoCg2Rgb32(frame, rgbFrame);
         var frameImage = new FullImage(frame.Width, frame.Height) {
             Pixels = Rgb32.Instance.Decode(rgbFrame),
         };
@@ -120,6 +135,23 @@ void ExtractFrames(FileInfo videoFile, string outputPath)
 
     Console.WriteLine();
     Console.WriteLine("Done");
+}
+
+void Mods2Avi(FileInfo videoFile, string outputPath)
+{
+    Console.WriteLine("Input: {0}", videoFile.FullName);
+    Console.WriteLine("Output: {0}", outputPath);
+
+    Console.WriteLine("Decoding MODS video into an AVI file...");
+    var watch = Stopwatch.StartNew();
+
+    using DataStream outputStream = DataStreamFactory.FromFile(outputPath, FileOpenMode.Write);
+    using Node videoNode = NodeFactory.FromFile(videoFile.FullName, FileOpenMode.Read)
+        .TransformWith<Binary2Mods>()
+        .TransformWith(new Mods2BinaryAvi(outputStream));
+
+    watch.Stop();
+    Console.WriteLine("Done in {0}", watch.Elapsed);
 }
 
 void Demux(FileInfo videoFile, string outputPath)

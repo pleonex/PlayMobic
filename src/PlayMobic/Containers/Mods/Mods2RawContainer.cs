@@ -49,7 +49,7 @@ public class Mods2RawContainer : IConverter<ModsVideo, NodeContainerFormat>
         }
 
         var colorConvertedFrame = new FrameYuv420(info.Width, info.Height);
-        using var audioInterleaveBuffer = new DataStream();
+        using var audioBlockBuffer = new DataStream();
         var demuxer = new ModsDemuxer(video);
         foreach (MediaPacket framePacket in demuxer.ReadFrames()) {
             if (framePacket is VideoPacket) {
@@ -65,11 +65,11 @@ public class Mods2RawContainer : IConverter<ModsVideo, NodeContainerFormat>
                 ProgressUpdate?.Invoke(this, framePacket.FrameCount);
             } else if (framePacket is AudioPacket audioPacket) {
                 byte[] channelData = audioDecoders[audioPacket.TrackIndex].Decode(audioPacket.Data, audioPacket.IsKeyFrame);
-                audioInterleaveBuffer.Write(channelData);
+                audioBlockBuffer.Write(channelData);
 
                 if (audioPacket.TrackIndex + 1 == info.AudioChannelsCount) {
-                    audioStream.WriteInterleavedPCM16(audioInterleaveBuffer, info.AudioChannelsCount);
-                    audioInterleaveBuffer.Position = 0;
+                    audioStream.WriteInterleavedPCM16(audioBlockBuffer, info.AudioChannelsCount);
+                    audioBlockBuffer.Position = 0;
                 }
             }
         }
