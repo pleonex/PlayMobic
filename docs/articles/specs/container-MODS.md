@@ -96,12 +96,13 @@ processing.
 The container data is a set of _frame packets_. Each packet contains data to
 decode one video frame and audio data for each channel.
 
-| Offset | Type     | Description                  |
-| ------ | -------- | ---------------------------- |
-| 0x00   | uint     | Packet info                  |
-| 0x04   | byte[]   | Video frame data             |
-| ....   | byte[][] | Blocks of audio data         |
-| ....   | byte[]   | 0 padding to 32-bits address |
+| Offset | Type     | Description                                   |
+| ------ | -------- | --------------------------------------------- |
+| 0x00   | uint     | Packet info                                   |
+| 0x04   | byte[]   | Video frame data                              |
+| ...    | uint     | (only N3 containers and I/key frames) Unknown |
+| ....   | byte[][] | Blocks of audio data                          |
+| ....   | byte[]   | 0 padding to 32-bits address                  |
 
 The packet info contains information about this frame packet:
 
@@ -122,12 +123,6 @@ The blocks of audio are mixed between channels. This means that for a two
 channels video there will be first a block for channel 0, then a block for
 channel 1, then a block for channel 0 again, repeating until reading all the
 blocks for each channel.
-
-> [!NOTE]  
-> The decoder skips _four_ bytes after reading the video frame date if the video
-> codec is `N3` and it's a key frame. It's unknown at this moment if it's some
-> adjustment from the internal logic of video decoding or there are four byte to
-> skip.
 
 The size of the audio blocks is fixed for some encoders:
 

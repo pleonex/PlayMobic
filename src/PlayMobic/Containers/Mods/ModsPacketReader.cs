@@ -66,7 +66,7 @@ public sealed class ModsPacketReader : IDemuxerPacketReader<MediaPacket>
             packetStream!.Position += Current.Data.Position;
 
             if (container.Info.ContainerFormatId == "N3" && currentIsKeyFrame && currentPacketStream == 1) {
-                packetStream!.Position += 4; // ??
+                packetStream!.Position += 4; // unknown value
             }
 
             packetOffset = packetStream!.Position;
@@ -111,7 +111,7 @@ public sealed class ModsPacketReader : IDemuxerPacketReader<MediaPacket>
 
     private void ReadNextPacket()
     {
-        // Read the packet header (NAL unit header?)
+        // Read the packet header
         uint packetInfo = reader.ReadUInt32();
         uint packetSize = packetInfo >> 14;
         int audioBlocksCount = (int)(packetInfo & 0x3FFF);

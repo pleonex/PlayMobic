@@ -100,7 +100,46 @@ frame _macroblock_.
 
 ### Inter-frame prediction
 
-TODO
+Inter prediction is based on copying blocks of component values (luma and
+chroma) from previous decoded frames, up to 5 frames.
+
+As with intra prediction, it works with macroblocks. For each of them the
+encoders provide a value with the operation mode. The possible values are:
+
+- 0: motion compensation with predicted vector
+- 1-5: motion compensation with delta vector
+- 6: intra prediction with mode per macroblock
+- 7: intra prediction with mode per sub-block
+- 8: partition current block by height
+- 9: partition current block by width
+
+Modes 6 and 7 uses the same intra-prediction macroblock decoding as a regular
+intra-prediction frame. Modes 8 and 9 divide the current blocks by half in width
+or height and reads a new operation mode value for each of them. This is a
+recursive operation dividing blocks up to 2x4 or 4x2. All these operations
+applies for the three components (luma and chromas) at the same time.
+
+Motion compensation works by copying a block of the same size of the component
+from a previous frame. The position in the previous frame may be different than
+the current block position. The different is named motion vector and it's
+encoded.
+
+The algorithm predicts the vector value (X and Y deltas) by doing a median
+between the last vector used in the **macroblock** to the left, to the right and
+at the current position. For the first row some of these values may be zero, but
+starting the second there should be a value for each of them. If a macroblock
+was decoded with intra, then its vector is equal to zero (remember to update the
+cache).
+
+Mode 0 uses this predicted vector while for modes 1 to 5 there are two
+exp-golomb integers indicating the delta X and Y values from the predicted
+vector. The modes also indicate the index to the previous frame buffer. Mode 1
+would take the last decoded frame, mode 2 the second to last and so on. Mode 0
+will also use the last decoded frame.
+
+The vector's X and Y values are encoded in double, meaning we should divide by 2
+to get the actual position difference. This may point to a **_half-pixel_**
+(half-pel) position. In that case the pixel is extrapolated from its neighbors.
 
 ## Transformation
 
@@ -129,14 +168,9 @@ zig-zag order. Then it will encode these integers with a mix of Huffman and
 Run-Length encoding (RLE).
 
 Starting at the beginning it encodes how many `0` integers there are until the
-next non-zero value and this value. This is encoded in a 12-bits value:
-
-- 0-4: amplitude / value
-- 5-10: zeroes run
-- 11: boolean indicating if this is the last value for the matrix (rest zeroes)
-
-These 12-bits are encoded with Huffman with pre-known trees. Each frame contains
-an index indicating what Huffman tree to use from two possibilities.
+next non-zero value, and this value. This is encoded in a 12-bits integer. These
+12-bits are encoded with Huffman with pre-known trees. Each frame contains an
+index indicating what Huffman tree to use from two possibilities.
 
 By setting the _amplitude_ to zero the encoder can indicate that it needs
 further data to encode the _run_ or _amplitude_. A following bit set to `0`
