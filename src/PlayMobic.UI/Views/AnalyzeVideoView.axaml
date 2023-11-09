@@ -3,13 +3,23 @@
              xmlns:d="http://schemas.microsoft.com/expression/blend/2008"
              xmlns:mc="http://schemas.openxmlformats.org/markup-compatibility/2006"
              xmlns:fluent="using:FluentAvalonia.UI.Controls"
-             mc:Ignorable="d" d:DesignWidth="800" d:DesignHeight="450"
-             x:Class="PlayMobic.UI.Views.AnalyzeVideoView">
-  <StackPanel
+             xmlns:vm="using:PlayMobic.UI.ViewModels"
+             xmlns:models="using:PlayMobic.UI.Models"
+             mc:Ignorable="d" d:DesignWidth="800" d:DesignHeight="900"
+             x:Class="PlayMobic.UI.Views.AnalyzeVideoView"
+             x:DataType="vm:AnalyzeVideoViewModel">
+  <Design.DataContext>
+    <vm:AnalyzeVideoViewModel />
+  </Design.DataContext>
+  
+  <ScrollViewer>
+  <Grid
     Margin="5"
-    Spacing="5">
+    RowDefinitions="Auto,Auto,*"
+    ColumnDefinitions="*">
 
     <Grid
+      Grid.Row="0" Grid.Column="0"
       RowDefinitions="Auto"
       ColumnDefinitions="Auto,*,Auto">
       <Label Grid.Row="0" Grid.Column="0" Margin="5" Content="MODS input file:" />
@@ -17,13 +27,7 @@
       <Button Grid.Row="0" Grid.Column="2" Margin="5" Content="Select" />
     </Grid>
 
-    <Label
-      FontWeight="Bold"
-      Content="Video information:" />
-    <DataGrid />
-    
-    <StackPanel>
-
+    <StackPanel Grid.Row="1" Grid.Column="0">
       <Border
         BorderBrush="Black"
         BorderThickness="1"
@@ -43,13 +47,32 @@
           <fluent:SymbolIcon Symbol="NextFilled" />
         </Button>
       </Grid>
+
       <StackPanel Orientation="Horizontal" HorizontalAlignment="Center">
         <Label Content="Frame:" FontWeight="Bold" />
         <Label Content="0" />
         <Label Content="| Time:" FontWeight="Black" />
         <Label Content="0:00:00.000" />
       </StackPanel>
-
     </StackPanel>
-  </StackPanel>
+
+    <StackPanel Grid.Row="2" Grid.Column="0">
+      <Label
+        Margin="0 10"
+        FontWeight="Bold"
+        Content="Video information:" />
+      <DataGrid
+        Name="videoInfoGrid"
+        AutoGenerateColumns="False"
+        IsReadOnly="True"
+        x:DataType="models:VideoInfoField">
+        <DataGrid.Columns>
+          <DataGridTextColumn Header="Name" Binding="{Binding Name}" />
+          <DataGridTextColumn Header="Value" Binding="{Binding Value}" Width="*" />
+        </DataGrid.Columns>
+      </DataGrid>
+    </StackPanel>
+
+  </Grid>
+  </ScrollViewer>
 </UserControl>

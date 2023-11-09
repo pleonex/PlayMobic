@@ -1,12 +1,22 @@
 ﻿namespace PlayMobic.UI.Views;
-using Avalonia;
+
+using Avalonia.Collections;
 using Avalonia.Controls;
-using Avalonia.Markup.Xaml;
+using PlayMobic.UI.ViewModels;
 
 public partial class AnalyzeVideoView : UserControl
 {
     public AnalyzeVideoView()
     {
         InitializeComponent();
+
+        var viewModel = new AnalyzeVideoViewModel();
+        DataContext = viewModel;
+
+        videoInfoGrid.ItemsSource = new DataGridCollectionView(viewModel.VideoInfo) {
+            GroupDescriptions = {
+                new DataGridPathGroupDescription("Group"),
+            },
+        };
     }
 }
