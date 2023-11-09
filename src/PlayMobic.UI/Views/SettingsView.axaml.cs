@@ -1,6 +1,9 @@
 ﻿namespace PlayMobic.UI.Views;
 
+using System.Linq;
+using System.Threading.Tasks;
 using Avalonia.Controls;
+using Avalonia.Platform.Storage;
 using PlayMobic.UI.ViewModels;
 
 public partial class SettingsView : UserControl
@@ -9,6 +12,23 @@ public partial class SettingsView : UserControl
     {
         InitializeComponent();
 
-        DataContext = new SettingsViewModel();
+        var viewModel = new SettingsViewModel();
+        DataContext = viewModel;
+
+        viewModel.OpenFfmpegBinary.RegisterHandler(OpenFfmpegBinary);
+    }
+
+    private async Task<IStorageFile?> OpenFfmpegBinary()
+    {
+        var options = new FilePickerOpenOptions {
+            AllowMultiple = false,
+            Title = "Select ffmpeg binary"
+        };
+
+        var results = await TopLevel.GetTopLevel(this)!
+            .StorageProvider
+            .OpenFilePickerAsync(options)
+            .ConfigureAwait(false);
+        return results.FirstOrDefault();
     }
 }

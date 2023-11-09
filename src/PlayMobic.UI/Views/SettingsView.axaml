@@ -4,6 +4,7 @@
              xmlns:mc="http://schemas.openxmlformats.org/markup-compatibility/2006"
              xmlns:fluent="using:FluentAvalonia.UI.Controls"
              xmlns:viewModels="using:PlayMobic.UI.ViewModels"
+             xmlns:converters="clr-namespace:PlayMobic.UI.Views.Converters"
              mc:Ignorable="d" d:DesignWidth="900" d:DesignHeight="450"
              x:Class="PlayMobic.UI.Views.SettingsView"
              x:DataType="viewModels:SettingsViewModel">
@@ -11,6 +12,10 @@
   <Design.DataContext>
     <viewModels:SettingsViewModel />
   </Design.DataContext>
+
+  <UserControl.Resources>
+    <converters:Bool2AlertIconConverter x:Key="Bool2AlertIcon" />
+  </UserControl.Resources>
   
   <ScrollViewer>
     <StackPanel Spacing="8">
@@ -52,14 +57,15 @@
       <fluent:SettingsExpander
         Header="ffmpeg"
         IconSource="Repair"
-        Description="Path to the executable of ffmpeg">
+        Description="Path to the executable of ffmpeg"
+        IsExpanded="True">
         <fluent:SettingsExpander.Footer>
-          <fluent:SymbolIcon Symbol="ImportantFilled" />
+          <fluent:SymbolIcon Symbol="{Binding IsValidFfmpegPath, Converter={StaticResource Bool2AlertIcon}}" />
         </fluent:SettingsExpander.Footer>
         <fluent:SettingsExpanderItem>
           <StackPanel Orientation="Horizontal" Spacing="5">
-            <TextBox Width="350" />
-            <Button Content="Select" />
+            <TextBox Width="350" Text="{Binding FfmpegPath}" />
+            <Button Content="Select" Command="{Binding SelectFfmpegPathCommand}" />
           </StackPanel>
         </fluent:SettingsExpanderItem>
       </fluent:SettingsExpander>
