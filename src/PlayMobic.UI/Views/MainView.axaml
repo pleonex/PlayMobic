@@ -3,13 +3,20 @@
              xmlns:d="http://schemas.microsoft.com/expression/blend/2008"
              xmlns:mc="http://schemas.openxmlformats.org/markup-compatibility/2006"
              xmlns:fluent="using:FluentAvalonia.UI.Controls"
+             xmlns:views="using:PlayMobic.UI.Views"
              mc:Ignorable="d" d:DesignWidth="800" d:DesignHeight="450"
              x:Class="PlayMobic.UI.Views.MainView">
 
-  <fluent:NavigationView PaneDisplayMode="Auto">
+  <fluent:NavigationView
+    Name="mainNavigationView"
+    IsSettingsVisible="False"
+    PaneDisplayMode="Auto" >
+
     <fluent:NavigationView.MenuItems>
-      <fluent:NavigationViewItem Content="Analyze" />
-      <fluent:NavigationViewItem Content="Convert" />
+      <fluent:NavigationViewItem Content="Convert" Tag="ConvertVideoView" IconSource="SaveLocal" />
+      <fluent:NavigationViewItem Content="Analyze" Tag="AnalyzeVideoView" IconSource="BrowsePhotos" />
     </fluent:NavigationView.MenuItems>
+
+    <fluent:Frame Name="mainNavigationFrame" />
   </fluent:NavigationView>
 </UserControl>

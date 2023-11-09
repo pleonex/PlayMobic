@@ -1,0 +1,34 @@
+<UserControl xmlns="https://github.com/avaloniaui"
+             xmlns:x="http://schemas.microsoft.com/winfx/2006/xaml"
+             xmlns:d="http://schemas.microsoft.com/expression/blend/2008"
+             xmlns:mc="http://schemas.openxmlformats.org/markup-compatibility/2006"
+             xmlns:fluent="using:FluentAvalonia.UI.Controls"
+             mc:Ignorable="d" d:DesignWidth="800" d:DesignHeight="450"
+             x:Class="PlayMobic.UI.Views.ConvertVideoView">
+  <Grid
+    ColumnDefinitions="Auto,*,Auto"
+    RowDefinitions="Auto,Auto,Auto,Auto,*"
+    Margin="5" >
+
+    <Label Grid.Row="0" Grid.Column="0" Margin="5" Content="MODS input file:" />
+    <TextBox Grid.Row="0" Grid.Column="1" Margin="5" IsReadOnly="True" />
+    <Button Grid.Row="0" Grid.Column="2" Margin="5" Content="Select" />
+
+    <Label Grid.Row="1" Grid.Column="0" Margin="5" Content="Output file:" />
+    <TextBox Grid.Row="1" Grid.Column="1" Margin="5" IsReadOnly="True" />
+    <Button Grid.Row="1" Grid.Column="2" Margin="5" Content="Select" />
+
+    <Label Grid.Row="2" Grid.Column="0" Margin="5" Content="Output format:" />
+    <ComboBox Grid.Row="2" Grid.Column="1" Margin="5" />
+
+    <Button
+      Grid.Row="3" Grid.ColumnSpan="3"
+      Name="convertBtn"
+      FontWeight="Bold"
+      FontSize="16"
+      Margin="5 20"
+      HorizontalAlignment="Stretch"
+      Content="Convert" />
+
+  </Grid>
+</UserControl>
