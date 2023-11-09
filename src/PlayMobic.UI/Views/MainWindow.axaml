@@ -7,7 +7,7 @@
         mc:Ignorable="d" d:DesignWidth="800" d:DesignHeight="450"
         x:Class="PlayMobic.UI.Views.MainWindow"
         Icon="/Assets/avalonia-logo.ico"
-        Height="950"
+        Height="980"
         Width="1200"
         Title="PlayMobic">
 

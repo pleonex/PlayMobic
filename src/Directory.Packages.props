@@ -1,22 +1,22 @@
 <Project>
   <!-- Centralize dependency management -->
   <ItemGroup>
-    <PackageVersion Include="Avalonia" Version="11.0.4" />
-    <PackageVersion Include="Avalonia.Controls.DataGrid" Version="11.0.4" />
-    <PackageVersion Include="Avalonia.Desktop" Version="11.0.4" />
+    <PackageVersion Include="Avalonia" Version="11.0.5" />
+    <PackageVersion Include="Avalonia.Controls.DataGrid" Version="11.0.5" />
+    <PackageVersion Include="Avalonia.Desktop" Version="11.0.5" />
     <PackageVersion Include="FluentAvaloniaUI" Version="2.0.4" />
-    <PackageVersion Include="Avalonia.Fonts.Inter" Version="11.0.4" />
-    <PackageVersion Include="Avalonia.Diagnostics" Version="11.0.4" />
-    <PackageVersion Include="CommunityToolkit.Mvvm" Version="8.2.1" />
-    <PackageVersion Include="BenchmarkDotNet" Version="0.13.9" />
+    <PackageVersion Include="Avalonia.Fonts.Inter" Version="11.0.5" />
+    <PackageVersion Include="Avalonia.Diagnostics" Version="11.0.5" />
+    <PackageVersion Include="CommunityToolkit.Mvvm" Version="8.2.2" />
+    <PackageVersion Include="BenchmarkDotNet" Version="0.13.10" />
     <PackageVersion Include="SharpAvi" Version="3.0.1" />
     <PackageVersion Include="Texim" Version="0.1.0-preview.195" />
     <PackageVersion Include="Yarhl" Version="4.0.0-preview.221" />
     <PackageVersion Include="System.CommandLine" Version="2.0.0-beta4.22272.1" />
-    <PackageVersion Include="nunit" Version="3.13.3" />
+    <PackageVersion Include="nunit" Version="3.14.0" />
     <PackageVersion Include="NUnit3TestAdapter" Version="4.5.0" />
-    <PackageVersion Include="NUnit.Analyzers" Version="3.6.1" />
-    <PackageVersion Include="Microsoft.NET.Test.Sdk" Version="17.7.2" />
+    <PackageVersion Include="NUnit.Analyzers" Version="3.9.0" />
+    <PackageVersion Include="Microsoft.NET.Test.Sdk" Version="17.8.0" />
     <PackageVersion Include="coverlet.collector" Version="6.0.0" />
     <PackageVersion Include="Microsoft.SourceLink.GitHub" Version="1.1.1" />
     <PackageVersion Include="StyleCop.Analyzers" Version="1.1.118" />

@@ -12,6 +12,7 @@
 
   <ItemGroup>
     <AvaloniaResource Include="Assets\**" />
+    <AvaloniaResource Include="../../LICENSE" Link="Assets\LICENSE" />
   </ItemGroup>
 
 
@@ -21,8 +22,14 @@
     <PackageReference Include="Avalonia.Desktop" />
     <PackageReference Include="FluentAvaloniaUI" />
     <PackageReference Include="Avalonia.Fonts.Inter" />
-    <!--Condition below is needed to remove Avalonia.Diagnostics package from build output in Release configuration.-->
     <PackageReference Condition="'$(Configuration)' == 'Debug'" Include="Avalonia.Diagnostics" />
     <PackageReference Include="CommunityToolkit.Mvvm" />
+  </ItemGroup>
+
+
+  <ItemGroup>
+    <Compile Update="Views\SettingsView.axaml.cs">
+      <DependentUpon>SettingsView.axaml</DependentUpon>
+    </Compile>
   </ItemGroup>
 </Project>

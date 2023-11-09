@@ -16,7 +16,9 @@ public partial class MainView : UserControl
 
     private void OnMainNavigationItemChange(object? sender, NavigationViewSelectionChangedEventArgs e)
     {
-        if (e.SelectedItem is NavigationViewItem nvi) {
+        if (e.IsSettingsSelected) {
+            mainNavigationFrame.Navigate(typeof(SettingsView));
+        } else if (e.SelectedItem is NavigationViewItem nvi) {
             string viewTypeName = typeof(MainView).Namespace + "." + nvi.Tag;
             Type viewType = Type.GetType(viewTypeName)
                 ?? throw new InvalidOperationException($"Cannot find view Type: {viewTypeName}");

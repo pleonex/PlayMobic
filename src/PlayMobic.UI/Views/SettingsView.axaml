@@ -1,0 +1,77 @@
+<UserControl xmlns="https://github.com/avaloniaui"
+             xmlns:x="http://schemas.microsoft.com/winfx/2006/xaml"
+             xmlns:d="http://schemas.microsoft.com/expression/blend/2008"
+             xmlns:mc="http://schemas.openxmlformats.org/markup-compatibility/2006"
+             xmlns:fluent="using:FluentAvalonia.UI.Controls"
+             xmlns:viewModels="using:PlayMobic.UI.ViewModels"
+             mc:Ignorable="d" d:DesignWidth="900" d:DesignHeight="450"
+             x:Class="PlayMobic.UI.Views.SettingsView"
+             x:DataType="viewModels:SettingsViewModel">
+
+  <Design.DataContext>
+    <viewModels:SettingsViewModel />
+  </Design.DataContext>
+  
+  <ScrollViewer>
+    <StackPanel Spacing="8">
+      <Grid
+        Margin="5"
+        RowDefinitions="Auto,Auto,Auto"
+        ColumnDefinitions="Auto,Auto,Auto,*">
+          <Image
+            Grid.Row="0" Grid.Column="0" Grid.RowSpan="3"
+            Margin="5"
+            Source="/Assets/avalonia-logo.ico"
+            Height="78"
+            RenderOptions.BitmapInterpolationMode="HighQuality" />
+
+          <TextBlock Grid.Row="0" Grid.Column="1" Text="PlayMobic" Theme="{StaticResource TitleTextBlockStyle}" />
+          <TextBlock Grid.Row="1" Grid.Column="1" Text="1.0.0.0" Theme="{StaticResource BodyTextBlockStyle}" />
+          <TextBlock Grid.Row="2" Grid.Column="1" Text="MIT License" Theme="{StaticResource CaptionTextBlockStyle}" />
+
+          <fluent:HyperlinkButton
+            Grid.Row="0"
+            Grid.Column="2"
+            Content="GitHub repository"
+            NavigateUri="https://github.com/pleonex/PlayMobic"
+            VerticalAlignment="Center"/>
+      </Grid>
+
+      <fluent:SettingsExpander
+        Header="Theme"
+        IconSource="DarkTheme"
+        Description="Change the current application theme">
+        <fluent:SettingsExpander.Footer>
+          <ComboBox
+            ItemsSource="{Binding AvailableThemes}"
+            SelectedItem="{Binding CurrentTheme}"
+            MinWidth="150" />
+        </fluent:SettingsExpander.Footer>
+      </fluent:SettingsExpander>
+
+      <fluent:SettingsExpander
+        Header="ffmpeg"
+        IconSource="Repair"
+        Description="Path to the executable of ffmpeg">
+        <fluent:SettingsExpander.Footer>
+          <fluent:SymbolIcon Symbol="ImportantFilled" />
+        </fluent:SettingsExpander.Footer>
+        <fluent:SettingsExpanderItem>
+          <StackPanel Orientation="Horizontal" Spacing="5">
+            <TextBox Width="350" />
+            <Button Content="Select" />
+          </StackPanel>
+        </fluent:SettingsExpanderItem>
+      </fluent:SettingsExpander>
+
+      <fluent:SettingsExpander
+        Header="License"
+        IconSource="Globe">
+        <fluent:SettingsExpanderItem>
+          <TextBlock Text="{Binding License}" />
+        </fluent:SettingsExpanderItem>
+      </fluent:SettingsExpander>
+    </StackPanel>
+  </ScrollViewer>
+  
+</UserControl>
