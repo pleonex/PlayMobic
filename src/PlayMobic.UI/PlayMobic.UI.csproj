@@ -24,6 +24,12 @@
     <PackageReference Include="Avalonia.Fonts.Inter" />
     <PackageReference Condition="'$(Configuration)' == 'Debug'" Include="Avalonia.Diagnostics" />
     <PackageReference Include="CommunityToolkit.Mvvm" />
+    <PackageReference Include="Texim" />
+  </ItemGroup>
+
+
+  <ItemGroup>
+    <ProjectReference Include="..\PlayMobic\PlayMobic.csproj" />
   </ItemGroup>
 
 
