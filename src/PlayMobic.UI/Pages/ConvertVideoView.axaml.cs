@@ -1,4 +1,4 @@
-﻿namespace PlayMobic.UI.Views;
+﻿namespace PlayMobic.UI.Pages;
 
 using System.Threading.Tasks;
 using Avalonia;

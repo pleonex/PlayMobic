@@ -11,6 +11,7 @@ Project("{2150E333-8FDC-42A3-9474-1A3956D46DE8}") = "Solution Items", "Solution 
 	ProjectSection(SolutionItems) = preProject
 		..\.editorconfig = ..\.editorconfig
 		..\.gitignore = ..\.gitignore
+		..\build.csx = ..\build.csx
 		Directory.Build.props = Directory.Build.props
 		Directory.Packages.props = Directory.Packages.props
 		..\README.md = ..\README.md
@@ -28,7 +29,7 @@ Project("{2150E333-8FDC-42A3-9474-1A3956D46DE8}") = "Spec", "Spec", "{013DDC5C-E
 EndProject
 Project("{9A19103F-16F7-4668-BE54-9A1E7A4F7556}") = "PlayMobic.PerformanceTests", "PlayMobic.PerformanceTests\PlayMobic.PerformanceTests.csproj", "{D0678BDA-FDBE-47EB-96CC-C6ACE2AEDC34}"
 EndProject
-Project("{FAE04EC0-301F-11D3-BF4B-00C04F79EFBC}") = "PlayMobic.UI", "PlayMobic.UI\PlayMobic.UI.csproj", "{54657513-4FE7-426F-8C5F-5A22FB22FAAC}"
+Project("{9A19103F-16F7-4668-BE54-9A1E7A4F7556}") = "PlayMobic.UI", "PlayMobic.UI\PlayMobic.UI.csproj", "{54657513-4FE7-426F-8C5F-5A22FB22FAAC}"
 EndProject
 Global
 	GlobalSection(SolutionConfigurationPlatforms) = preSolution

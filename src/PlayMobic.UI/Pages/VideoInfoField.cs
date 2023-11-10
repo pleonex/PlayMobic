@@ -1,4 +1,4 @@
-﻿namespace PlayMobic.UI.Models;
+﻿namespace PlayMobic.UI.Pages;
 
 using CommunityToolkit.Mvvm.ComponentModel;
 

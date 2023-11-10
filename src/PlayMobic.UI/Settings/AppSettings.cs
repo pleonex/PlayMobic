@@ -1,4 +1,4 @@
-﻿namespace PlayMobic.UI.Models;
+﻿namespace PlayMobic.UI.Settings;
 
 internal record AppSettings(string FfmpegPath)
 {

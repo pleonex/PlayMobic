@@ -3,13 +3,12 @@
              xmlns:d="http://schemas.microsoft.com/expression/blend/2008"
              xmlns:mc="http://schemas.openxmlformats.org/markup-compatibility/2006"
              xmlns:fluent="using:FluentAvalonia.UI.Controls"
-             xmlns:vm="using:PlayMobic.UI.ViewModels"
-             xmlns:models="using:PlayMobic.UI.Models"
+             xmlns:local="using:PlayMobic.UI.Pages"
              mc:Ignorable="d" d:DesignWidth="800" d:DesignHeight="500"
-             x:Class="PlayMobic.UI.Views.AnalyzeVideoView"
-             x:DataType="vm:AnalyzeVideoViewModel">
+             x:Class="PlayMobic.UI.Pages.AnalyzeVideoView"
+             x:DataType="local:AnalyzeVideoViewModel">
   <Design.DataContext>
-    <vm:AnalyzeVideoViewModel />
+    <local:AnalyzeVideoViewModel />
   </Design.DataContext>
   
   <Grid
@@ -76,7 +75,7 @@
         CanUserReorderColumns="False"
         CanUserSortColumns="False"
         VerticalScrollBarVisibility="Auto"
-        x:DataType="models:VideoInfoField">
+        x:DataType="local:VideoInfoField">
         <DataGrid.Columns>
           <DataGridTextColumn Header="Name" Binding="{Binding Name}" />
           <DataGridTextColumn Header="Value" Binding="{Binding Value}" Width="*" />

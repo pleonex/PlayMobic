@@ -1,11 +1,10 @@
-﻿namespace PlayMobic.UI.Views;
+﻿namespace PlayMobic.UI.Pages;
 
 using System.Linq;
 using System.Threading.Tasks;
 using Avalonia.Collections;
 using Avalonia.Controls;
 using Avalonia.Platform.Storage;
-using PlayMobic.UI.ViewModels;
 
 public partial class AnalyzeVideoView : UserControl
 {

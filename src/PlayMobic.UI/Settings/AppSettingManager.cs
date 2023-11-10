@@ -1,4 +1,4 @@
-﻿namespace PlayMobic.UI.Models;
+﻿namespace PlayMobic.UI.Settings;
 using System;
 using System.IO;
 using System.Text.Json;

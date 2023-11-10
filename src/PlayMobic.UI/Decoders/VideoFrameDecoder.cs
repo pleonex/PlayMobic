@@ -1,9 +1,7 @@
-﻿namespace PlayMobic.UI.Models;
+﻿namespace PlayMobic.UI.Decoders;
 using System;
 using System.Collections.Generic;
 using System.Linq;
-using System.Text;
-using System.Threading.Tasks;
 using Avalonia.Media.Imaging;
 using PlayMobic.Containers;
 using PlayMobic.Containers.Mods;

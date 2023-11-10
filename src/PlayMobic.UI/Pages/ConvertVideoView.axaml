@@ -4,7 +4,7 @@
              xmlns:mc="http://schemas.openxmlformats.org/markup-compatibility/2006"
              xmlns:fluent="using:FluentAvalonia.UI.Controls"
              mc:Ignorable="d" d:DesignWidth="800" d:DesignHeight="450"
-             x:Class="PlayMobic.UI.Views.ConvertVideoView">
+             x:Class="PlayMobic.UI.Pages.ConvertVideoView">
   <Grid
     ColumnDefinitions="Auto,*,Auto"
     RowDefinitions="Auto,Auto,Auto,Auto,*"

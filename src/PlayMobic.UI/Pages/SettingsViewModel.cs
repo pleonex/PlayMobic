@@ -1,8 +1,7 @@
-﻿namespace PlayMobic.UI.ViewModels;
+﻿namespace PlayMobic.UI.Pages;
 
 using System;
 using System.IO;
-using System.Text.Json;
 using System.Threading.Tasks;
 using Avalonia;
 using Avalonia.Platform;
@@ -11,7 +10,8 @@ using Avalonia.Styling;
 using CommunityToolkit.Mvvm.ComponentModel;
 using CommunityToolkit.Mvvm.Input;
 using FluentAvalonia.Styling;
-using PlayMobic.UI.Models;
+using PlayMobic.UI.Mvvm;
+using PlayMobic.UI.Settings;
 
 public partial class SettingsViewModel : ObservableObject
 {

@@ -1,4 +1,4 @@
-﻿namespace PlayMobic.UI;
+﻿namespace PlayMobic.UI.Mvvm;
 using System;
 
 public class Interaction<TInput, TOutput>

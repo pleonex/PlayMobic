@@ -34,7 +34,7 @@
 
 
   <ItemGroup>
-    <Compile Update="Views\SettingsView.axaml.cs">
+    <Compile Update="Pages\SettingsView.axaml.cs">
       <DependentUpon>SettingsView.axaml</DependentUpon>
     </Compile>
   </ItemGroup>

@@ -3,18 +3,17 @@
              xmlns:d="http://schemas.microsoft.com/expression/blend/2008"
              xmlns:mc="http://schemas.openxmlformats.org/markup-compatibility/2006"
              xmlns:fluent="using:FluentAvalonia.UI.Controls"
-             xmlns:viewModels="using:PlayMobic.UI.ViewModels"
-             xmlns:converters="clr-namespace:PlayMobic.UI.Views.Converters"
+             xmlns:local="clr-namespace:PlayMobic.UI.Pages"
              mc:Ignorable="d" d:DesignWidth="900" d:DesignHeight="450"
-             x:Class="PlayMobic.UI.Views.SettingsView"
-             x:DataType="viewModels:SettingsViewModel">
+             x:Class="PlayMobic.UI.Pages.SettingsView"
+             x:DataType="local:SettingsViewModel">
 
   <Design.DataContext>
-    <viewModels:SettingsViewModel />
+    <local:SettingsViewModel />
   </Design.DataContext>
 
   <UserControl.Resources>
-    <converters:Bool2AlertIconConverter x:Key="Bool2AlertIcon" />
+    <local:Bool2AlertIconConverter x:Key="Bool2AlertIcon" />
   </UserControl.Resources>
   
   <ScrollViewer>

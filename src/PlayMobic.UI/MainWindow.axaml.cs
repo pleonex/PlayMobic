@@ -1,4 +1,4 @@
-﻿namespace PlayMobic.UI.Views;
+﻿namespace PlayMobic.UI;
 
 using Avalonia.Markup.Xaml;
 using FluentAvalonia.UI.Windowing;

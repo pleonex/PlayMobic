@@ -1,4 +1,4 @@
-﻿namespace PlayMobic.UI.ViewModels;
+﻿namespace PlayMobic.UI.Pages;
 
 using System;
 using System.Collections.Generic;
@@ -10,7 +10,8 @@ using Avalonia.Threading;
 using CommunityToolkit.Mvvm.ComponentModel;
 using CommunityToolkit.Mvvm.Input;
 using PlayMobic.Containers.Mods;
-using PlayMobic.UI.Models;
+using PlayMobic.UI.Decoders;
+using PlayMobic.UI.Mvvm;
 
 public partial class AnalyzeVideoViewModel : ObservableObject
 {

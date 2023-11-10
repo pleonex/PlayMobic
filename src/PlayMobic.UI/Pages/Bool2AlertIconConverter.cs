@@ -1,4 +1,4 @@
-﻿namespace PlayMobic.UI.Views.Converters;
+﻿namespace PlayMobic.UI.Pages;
 using System;
 using System.Globalization;
 using Avalonia.Data;
