@@ -22,7 +22,7 @@ public sealed class BuildLifetime : FrostingLifetime<PleOpsBuildContext>
         context.DotNetContext.ApplicationProjects.Add(new ProjectPublicationInfo(
             "./src/PlayMobic.Tool", new[] { "win-x64", "linux-x64", "osx-x64" }, "net6.0"));
         context.DotNetContext.ApplicationProjects.Add(new ProjectPublicationInfo(
-            "./src/PlayMobic.UI", new[] { "win-x64", "linux-x64", "osx-x64"}, "net6.0"))
+            "./src/PlayMobic.UI", new[] { "win-x64", "linux-x64", "osx-x64" }, "net6.0"));
 
         // Update build parameters from command line arguments.
         context.ReadArguments();
