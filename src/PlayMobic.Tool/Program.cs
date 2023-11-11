@@ -172,7 +172,9 @@ void Demux(FileInfo videoFile, string outputPath)
     int framesCount = video.Info.FramesCount;
     int frame5Percentage = 5 * framesCount / 100;
 
-    var mods2RawStreams = new Mods2RawContainer(convertYCbCr: true);
+    using DataStream videoStream = DataStreamFactory.FromFile(videoPath, FileOpenMode.Write);
+    using DataStream audioStream = DataStreamFactory.FromFile(audioPath, FileOpenMode.Write);
+    var mods2RawStreams = new Mods2RawContainer(videoStream, audioStream, convertYCbCr: true);
     mods2RawStreams.ProgressUpdate += (_, e) => {
         if ((e % frame5Percentage) == 0) {
             Console.Write("\rDecoding... {0} / {1} ({2:P2})", e, framesCount, (double)e / framesCount);

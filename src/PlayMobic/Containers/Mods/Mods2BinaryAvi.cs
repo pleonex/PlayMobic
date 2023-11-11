@@ -1,12 +1,8 @@
 ﻿namespace PlayMobic.Containers.Mods;
 using System;
-using System.Collections.Generic;
-using System.Linq;
-using System.Text;
-using System.Threading.Tasks;
 using PlayMobic.Audio;
-using PlayMobic.Video.Mobiclip;
 using PlayMobic.Video;
+using PlayMobic.Video.Mobiclip;
 using SharpAvi.Codecs;
 using SharpAvi.Output;
 using Yarhl.FileFormat;
@@ -33,14 +29,16 @@ public class Mods2BinaryAvi : IConverter<ModsVideo, BinaryFormat>
         };
 
         IAviVideoStream videoStream = writer.AddUncompressedVideoStream(source.Info.Width, source.Info.Height);
-        IAviAudioStream audioStream = writer.AddAudioStream(source.Info.AudioChannelsCount, source.Info.AudioFrequency, 16);
+        IAviAudioStream? audioStream = source.Info.AudioChannelsCount > 0
+            ? writer.AddAudioStream(source.Info.AudioChannelsCount, source.Info.AudioFrequency, 16)
+            : null;
         Decode(source, videoStream, audioStream);
 
         writer.Close();
         return new BinaryFormat(output);
     }
 
-    private void Decode(ModsVideo video, IAviVideoStream videoStream, IAviAudioStream audioStream)
+    private void Decode(ModsVideo video, IAviVideoStream videoStream, IAviAudioStream? audioStream)
     {
         ModsInfo info = video.Info;
         var videoDecoder = new MobiclipDecoder(info.Width, info.Height, isStereo: false);
@@ -60,7 +58,7 @@ public class Mods2BinaryAvi : IConverter<ModsVideo, BinaryFormat>
                 // Flush previous audio data block
                 if (audioBlocksBuffer.Length > 0) {
                     audioBlocksBuffer.ReadInterleavedPCM16(audioBlockLength, audioInterleaveBuffer, info.AudioChannelsCount);
-                    audioStream.WriteBlock(audioInterleaveBuffer, 0, audioBlockLength);
+                    audioStream!.WriteBlock(audioInterleaveBuffer, 0, audioBlockLength);
                     audioBlocksBuffer.Position = 0;
                     audioBlockLength = 0;
                 }
@@ -83,7 +81,7 @@ public class Mods2BinaryAvi : IConverter<ModsVideo, BinaryFormat>
         // Flush last block
         if (audioBlocksBuffer.Length > 0) {
             audioBlocksBuffer.ReadInterleavedPCM16(audioBlockLength, audioInterleaveBuffer, info.AudioChannelsCount);
-            audioStream.WriteBlock(audioInterleaveBuffer, 0, audioBlockLength);
+            audioStream!.WriteBlock(audioInterleaveBuffer, 0, audioBlockLength);
         }
     }
 
