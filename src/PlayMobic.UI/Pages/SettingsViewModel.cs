@@ -46,7 +46,7 @@ public partial class SettingsViewModel : ObservableObject
         using var licenseStreamReader = new StreamReader(licenseStream);
         License = licenseStreamReader.ReadToEnd();
 
-        ffmpegPath = AppSettingManager.LoadSettingFile()?.FfmpegPath ?? string.Empty;
+        ffmpegPath = AppSettingManager.Instance.LoadSettingFile()?.FfmpegPath ?? string.Empty;
         IsValidFfmpegPath = File.Exists(ffmpegPath);
         OpenFfmpegBinary = new AsyncInteraction<IStorageFile?>();
     }
@@ -75,11 +75,11 @@ public partial class SettingsViewModel : ObservableObject
         IsValidFfmpegPath = File.Exists(FfmpegPath);
 
         // Thread-issue
-        var currentSettings = AppSettingManager.LoadSettingFile();
+        var currentSettings = AppSettingManager.Instance.LoadSettingFile();
         var newSettings = (currentSettings is null)
             ? new AppSettings(FfmpegPath)
             : currentSettings with { FfmpegPath = FfmpegPath };
-        AppSettingManager.SaveSettingFile(newSettings);
+        AppSettingManager.Instance.SaveSettingFile(newSettings);
     }
 
     partial void OnCurrentThemeChanged(ApplicationThemes value)

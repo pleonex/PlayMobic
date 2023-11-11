@@ -30,13 +30,18 @@
       Command="{Binding SelectOutputPathCommand}" />
 
     <Label Grid.Row="1" Grid.Column="0" Margin="5" Content="Output format:" />
+    <StackPanel Grid.Row="1" Grid.Column="1" Orientation="Horizontal">
     <ComboBox
-      Grid.Row="1" Grid.Column="1"
-      Margin="5"
-      MinWidth="150"
-      ItemsSource="{Binding AvailableOutputFormats}"
-      SelectedItem="{Binding SelectedOutputFormat}" />
-
+        Margin="5"
+        MinWidth="150"
+        ItemsSource="{Binding AvailableOutputFormats}"
+        SelectedItem="{Binding SelectedOutputFormat}" />
+      <fluent:InfoBadge
+        Classes="Caution Icon"
+        IsVisible="{Binding InvalidFfmpegRequirement}"
+        ToolTip.Tip="ffmpeg binary does not exist. Set if from settings." />
+    </StackPanel>
+ 
     <Label Grid.Row="2" Grid.Column="0" Margin="5" Content="MODS input files:" />
     <StackPanel Grid.Row="3" Grid.Column="2" Orientation="Vertical">
       <Button
@@ -90,16 +95,12 @@
       Margin="5"
       IsOpen="{Binding HasFfmpegCommand}"
       IsClosable="False"
-      Title="Convert raw streams">
-      <StackPanel Orientation="Vertical">
-        <TextBlock
-          TextWrapping="Wrap"
-          Text="You can convert the raw streams into a standard format using ffmpeg:" />
-        <TextBlock
+      Title="You can convert the raw streams into a standard format using ffmpeg:">
+        <SelectableTextBlock
+          SelectionBrush="{DynamicResource AccentFillColorSelectedTextBackgroundBrush}"
           Margin="0 0 0 5"
           TextWrapping="Wrap"
           Text="{Binding FfmpegCommand}" />
-      </StackPanel>
     </fluent:InfoBar>
   </Grid>
 </UserControl>

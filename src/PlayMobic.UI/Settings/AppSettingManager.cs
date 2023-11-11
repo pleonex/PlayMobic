@@ -3,14 +3,19 @@ using System;
 using System.IO;
 using System.Text.Json;
 
-internal static class AppSettingManager
+internal class AppSettingManager
 {
+    private static AppSettingManager? instance;
     private static string? SettingsPath =>
         Environment.ProcessPath is null
             ? null
             : Path.Combine(Path.GetDirectoryName(Environment.ProcessPath)!, "settings.json");
 
-    public static AppSettings? LoadSettingFile()
+    public static AppSettingManager Instance => instance ??= new AppSettingManager();
+
+    public event EventHandler<AppSettings>? SettingsChanged;
+
+    public AppSettings? LoadSettingFile()
     {
         if (!File.Exists(SettingsPath)) {
             return null;
@@ -20,7 +25,7 @@ internal static class AppSettingManager
         return JsonSerializer.Deserialize<AppSettings>(json);
     }
 
-    public static void SaveSettingFile(AppSettings settings)
+    public void SaveSettingFile(AppSettings settings)
     {
         if (SettingsPath is null) {
             throw new InvalidOperationException();
@@ -28,5 +33,7 @@ internal static class AppSettingManager
 
         string json = JsonSerializer.Serialize(settings);
         File.WriteAllText(SettingsPath, json);
+
+        SettingsChanged?.Invoke(this, settings);
     }
 }

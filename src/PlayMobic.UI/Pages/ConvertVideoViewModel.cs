@@ -3,10 +3,8 @@ using System;
 using System.Collections.Generic;
 using System.Collections.ObjectModel;
 using System.IO;
-using System.Reflection;
 using System.Threading;
 using System.Threading.Tasks;
-using System.Xml.Linq;
 using Avalonia.Platform.Storage;
 using Avalonia.Threading;
 using CommunityToolkit.Mvvm.ComponentModel;
@@ -14,12 +12,14 @@ using CommunityToolkit.Mvvm.Input;
 using FluentAvalonia.UI.Controls;
 using PlayMobic.Containers.Mods;
 using PlayMobic.UI.Mvvm;
+using PlayMobic.UI.Settings;
 using Yarhl.FileSystem;
 using Yarhl.IO;
 
 public partial class ConvertVideoViewModel : ObservableObject
 {
     private CancellationTokenSource? convertCancellation;
+    private string? ffmpegPath;
 
     [ObservableProperty]
     private ObservableCollection<string> inputFiles;
@@ -28,6 +28,9 @@ public partial class ConvertVideoViewModel : ObservableObject
     private string outputPath;
 
     [ObservableProperty]
+    [NotifyPropertyChangedFor(nameof(HasFfmpegCommand))]
+    [NotifyPropertyChangedFor(nameof(InvalidFfmpegRequirement))]
+    [NotifyCanExecuteChangedFor(nameof(StartConvertCommand))]
     private OutputFormatKind selectedOutputFormat;
 
     [ObservableProperty]
@@ -37,17 +40,22 @@ public partial class ConvertVideoViewModel : ObservableObject
     [ObservableProperty]
     private string ffmpegCommand;
 
-    [ObservableProperty]
-    private bool hasFfmpegCommand;
-
     public ConvertVideoViewModel()
     {
         inputFiles = new ObservableCollection<string>();
         outputPath = string.Empty;
         selectedOutputFormat = OutputFormatKind.MP4;
 
-        hasFfmpegCommand = false;
-        ffmpegCommand = string.Empty;
+        ffmpegCommand = "ffmpeg " +
+            "-f s16le -channel_layout {mono/stereo} -ar {sampleRate} -ac {audioChannels} -i {rawAudio} " +
+            "-f rawvideo -pix_fmt yuv420p -r {fps} -s {width}x{height} -i {rawVideo} " +
+            "-ac {audioChannels} {outputPath}.mp4";
+        ffmpegPath = AppSettingManager.Instance.LoadSettingFile()?.FfmpegPath;
+        AppSettingManager.Instance.SettingsChanged += (_, e) => {
+            ffmpegPath = e.FfmpegPath;
+            StartConvertCommand.NotifyCanExecuteChanged();
+            OnPropertyChanged(nameof(InvalidFfmpegRequirement));
+        };
 
         AskOutputFolder = new AsyncInteraction<IStorageFolder?>();
         AskInputFiles = new AsyncInteraction<IEnumerable<IStorageFile>>();
@@ -64,6 +72,11 @@ public partial class ConvertVideoViewModel : ObservableObject
     public AsyncInteraction<IStorageFolder?> AskInputFolder { get; }
 
     public AsyncInteraction<object> ShowConvertDialog { get; }
+
+    public bool HasFfmpegCommand => SelectedOutputFormat == OutputFormatKind.Raw;
+
+    public bool InvalidFfmpegRequirement =>
+        SelectedOutputFormat is OutputFormatKind.MP4 && !File.Exists(ffmpegPath);
 
     public event EventHandler<ConversionProgressEventArgs>? ConversionProgressed;
 
@@ -162,7 +175,12 @@ public partial class ConvertVideoViewModel : ObservableObject
 
     private bool CanConvert()
     {
-        return InputFiles.Count > 0 && !string.IsNullOrEmpty(OutputPath);
+        bool validIO = InputFiles.Count > 0 && !string.IsNullOrEmpty(OutputPath);
+        if (SelectedOutputFormat is OutputFormatKind.MP4) {
+            return validIO && File.Exists(ffmpegPath);
+        }
+
+        return validIO;
     }
 
     public async Task ConvertAsync()
@@ -194,7 +212,7 @@ public partial class ConvertVideoViewModel : ObservableObject
                 return ConvertToAvi(input, fileIndex);
 
             case OutputFormatKind.MP4:
-                break;
+                return ConvertToMp4(input, fileIndex);
         }
 
         return true;
@@ -263,6 +281,38 @@ public partial class ConvertVideoViewModel : ObservableObject
 
             ConversionProgressed?.Invoke(this, new ConversionProgressEventArgs(input.Name, 100, ex.Message));
             return false;
+        }
+    }
+
+    private bool ConvertToMp4(Node input, int index)
+    {
+        string name = Path.GetFileNameWithoutExtension(input.Name);
+        string outputVideo = Path.Combine(OutputPath, name + ".rawvideo");
+        string outputAudio = Path.Combine(OutputPath, name + ".rawaudio");
+
+        string outputMp4 = Path.Combine(OutputPath, name + ".mp4");
+        ModsInfo videoInfo = input.GetFormatAs<ModsVideo>()!.Info;
+        var ffmpegParams = new FfmpegConverterParameters(
+            ffmpegPath!,
+            outputVideo,
+            outputAudio,
+            outputMp4,
+            videoInfo);
+
+        try {
+            bool success = ConvertToRaw(input, index);
+            if (success) {
+                _ = input.TransformWith(new FfmpegConverter(ffmpegParams));
+            }
+
+            return success;
+        } catch (Exception ex) {
+            File.Delete(outputMp4);
+            ConversionProgressed?.Invoke(this, new ConversionProgressEventArgs(input.Name, 100, ex.Message));
+            return false;
+        } finally {
+            File.Delete(outputVideo);
+            File.Delete(outputAudio);
         }
     }
 
