@@ -10,14 +10,18 @@ using Yarhl.IO;
 public class Mods2RawContainer : IConverter<ModsVideo, NodeContainerFormat>
 {
     private readonly bool convertYCbCr;
+    private readonly Stream videoStream;
+    private readonly Stream audioStream;
 
-    public Mods2RawContainer()
-        : this(true)
+    public Mods2RawContainer(Stream rawVideoStream, Stream rawAudioStream)
+        : this(rawVideoStream, rawAudioStream, true)
     {
     }
 
-    public Mods2RawContainer(bool convertYCbCr)
+    public Mods2RawContainer(Stream rawVideoStream, Stream rawAudioStream, bool convertYCbCr)
     {
+        videoStream = rawVideoStream;
+        audioStream = rawAudioStream;
         this.convertYCbCr = convertYCbCr;
     }
 
@@ -28,18 +32,18 @@ public class Mods2RawContainer : IConverter<ModsVideo, NodeContainerFormat>
         ArgumentNullException.ThrowIfNull(source);
 
         var container = new NodeContainerFormat();
-        var rawVideo = new BinaryFormat();
+        var rawVideo = new BinaryFormat(videoStream);
         container.Root.Add(new Node("video", rawVideo));
 
-        var rawAudio = new BinaryFormat();
+        var rawAudio = new BinaryFormat(audioStream);
         container.Root.Add(new Node("audio", rawAudio));
 
-        Decode(source, rawVideo.Stream, rawAudio.Stream);
+        Decode(source);
 
         return container;
     }
 
-    private void Decode(ModsVideo video, DataStream videoStream, DataStream audioStream)
+    private void Decode(ModsVideo video)
     {
         ModsInfo info = video.Info;
         var videoDecoder = new MobiclipDecoder(info.Width, info.Height, isStereo: false);

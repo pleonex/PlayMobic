@@ -4,11 +4,11 @@
         xmlns:d="http://schemas.microsoft.com/expression/blend/2008"
         xmlns:mc="http://schemas.openxmlformats.org/markup-compatibility/2006"
         xmlns:local="using:PlayMobic.UI"
-        mc:Ignorable="d" d:DesignWidth="800" d:DesignHeight="450"
+        mc:Ignorable="d" d:DesignWidth="600" d:DesignHeight="700"
         x:Class="PlayMobic.UI.MainWindow"
         Icon="/Assets/avalonia-logo.ico"
         Height="700"
-        Width="1200"
+        Width="600"
         Title="PlayMobic">
 
     <local:MainView />

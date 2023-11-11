@@ -4,7 +4,7 @@
              xmlns:mc="http://schemas.openxmlformats.org/markup-compatibility/2006"
              xmlns:fluent="using:FluentAvalonia.UI.Controls"
              xmlns:local="using:PlayMobic.UI.Pages"
-             mc:Ignorable="d" d:DesignWidth="800" d:DesignHeight="500"
+             mc:Ignorable="d" d:DesignWidth="800" d:DesignHeight="700"
              x:Class="PlayMobic.UI.Pages.AnalyzeVideoView"
              x:DataType="local:AnalyzeVideoViewModel">
   <Design.DataContext>
@@ -74,6 +74,7 @@
         IsReadOnly="True"
         CanUserReorderColumns="False"
         CanUserSortColumns="False"
+        HeadersVisibility="None"
         VerticalScrollBarVisibility="Auto"
         x:DataType="local:VideoInfoField">
         <DataGrid.Columns>

@@ -4,7 +4,7 @@ using Yarhl.IO;
 
 public static class IOAudioExtensions
 {
-    public static void WriteInterleavedPCM16(this DataStream stream, Stream audioData, int channels)
+    public static void WriteInterleavedPCM16(this Stream stream, Stream audioData, int channels)
     {
         int samplesPerChannel = (int)(audioData.Length / channels / 2);
 
@@ -18,7 +18,7 @@ public static class IOAudioExtensions
         }
     }
 
-    public static void ReadInterleavedPCM16(this DataStream stream, int audioDataLength, byte[] output, int channels)
+    public static void ReadInterleavedPCM16(this Stream stream, int audioDataLength, byte[] output, int channels)
     {
         if (output.Length < stream.Length) {
             throw new ArgumentException("Output is too small");
