@@ -10,10 +10,14 @@
   <Design.DataContext>
     <local:AnalyzeVideoViewModel />
   </Design.DataContext>
+
+  <UserControl.Resources>
+    <fluent:SymbolIconSource x:Key="SaveIcon" Symbol="ImageCopy" FontSize="18" />
+  </UserControl.Resources>
   
   <Grid
     Margin="5"
-    RowDefinitions="Auto,Auto,*"
+    RowDefinitions="Auto,Auto,Auto,Auto,*"
     ColumnDefinitions="*">
 
     <Grid
@@ -25,7 +29,7 @@
       <Button Grid.Row="0" Grid.Column="2" Margin="5" Content="Select" Command="{Binding OpenModsFileCommand}" />
     </Grid>
 
-    <StackPanel Grid.Row="1" Grid.Column="0">
+    <Grid Grid.Row="1">
       <Border
         BorderBrush="Black"
         BorderThickness="1"
@@ -33,39 +37,48 @@
         HorizontalAlignment="Center">
         <Image MinHeight="192" MinWidth="256" Stretch="None" Source="{Binding CurrentFrameImage}" />
       </Border>
+      <Button
+        Margin="10"
+        HorizontalAlignment="Right"
+        VerticalAlignment="Top"
+        Command="{Binding ExportFrameCommand}"
+        ToolTip.Tip="Export current frame">
+        <fluent:IconSourceElement IconSource="{StaticResource SaveIcon}" />
+      </Button>
+    </Grid>
 
-      <Grid
-        RowDefinitions="Auto"
-        ColumnDefinitions="Auto,*,Auto">
-        <Button Grid.Column="0" VerticalAlignment="Center" Command="{Binding PreviousFrameCommand}">
-          <fluent:SymbolIcon Symbol="PreviousFilled" />
-        </Button>
-        <Slider
-          Grid.Column="1"
-          Margin="5 0"
-          IsSnapToTickEnabled="True"
-          TickFrequency="1"
-          Value="{Binding CurrentFrame}"
-          Maximum="{Binding FramesCount}" />
-        <Button Grid.Column="2" VerticalAlignment="Center" Command="{Binding NextFrameCommand}">
-          <fluent:SymbolIcon Symbol="NextFilled" />
-        </Button>
-      </Grid>
+    <Grid
+      Grid.Row="2"
+      RowDefinitions="Auto"
+      ColumnDefinitions="Auto,*,Auto">
+      <Button Grid.Column="0" VerticalAlignment="Center" Command="{Binding PreviousFrameCommand}">
+        <fluent:SymbolIcon Symbol="PreviousFilled" />
+      </Button>
+      <Slider
+        Grid.Column="1"
+        Margin="5 0"
+        IsSnapToTickEnabled="True"
+        TickFrequency="1"
+        Value="{Binding CurrentFrame}"
+        Maximum="{Binding FramesCount}" />
+      <Button Grid.Column="2" VerticalAlignment="Center" Command="{Binding NextFrameCommand}">
+        <fluent:SymbolIcon Symbol="NextFilled" />
+      </Button>
+    </Grid>
 
-      <StackPanel Orientation="Horizontal" HorizontalAlignment="Center">
-        <Label Content="Frame:" FontWeight="Bold" />
-        <Label Content="{Binding CurrentFrame}" />
-        <Label Content="| Time:" FontWeight="Black" />
-        <Label Content="{Binding CurrentTime}" />
-      </StackPanel>
+    <StackPanel Grid.Row="3" Orientation="Horizontal" HorizontalAlignment="Center">
+      <Label Content="Frame:" FontWeight="Bold" />
+      <Label Content="{Binding CurrentFrame}" />
+      <Label Content="| Time:" FontWeight="Black" />
+      <Label Content="{Binding CurrentTime}" />
     </StackPanel>
 
     <Separator
-      Grid.Row="2" Grid.Column="0"
+      Grid.Row="4" Grid.Column="0"
       Margin="0 10"
       VerticalAlignment="Top" />
     <Expander
-      Grid.Row="2" Grid.Column="0"
+      Grid.Row="4" Grid.Column="0"
       Margin="0 20 0 0"
       Header="Video information">
       <DataGrid

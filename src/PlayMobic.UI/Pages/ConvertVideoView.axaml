@@ -78,7 +78,7 @@
       Grid.Row="4" Grid.ColumnSpan="3"
       IsOpen="True"
       IsClosable="True"
-      Severity="Warning"
+      Severity="Informational"
       Title="The output files will have the same name as their input MODS file but different extension. If file already exists it will be overwritten."/>
     
     <Button

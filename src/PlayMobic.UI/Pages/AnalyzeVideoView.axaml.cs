@@ -16,6 +16,7 @@ public partial class AnalyzeVideoView : UserControl
         DataContext = viewModel;
 
         viewModel.SelectModsFile.RegisterHandler(SelectModsFile);
+        viewModel.AskFrameOutputPath.RegisterHandler(AskExportFramePath);
 
         videoInfoGrid.ItemsSource = new DataGridCollectionView(viewModel.VideoInfo) {
             GroupDescriptions = {
@@ -36,5 +37,21 @@ public partial class AnalyzeVideoView : UserControl
             .OpenFilePickerAsync(options)
             .ConfigureAwait(false);
         return results.FirstOrDefault();
+    }
+
+    private async Task<IStorageFile?> AskExportFramePath()
+    {
+        var options = new FilePickerSaveOptions {
+            DefaultExtension = ".png",
+            FileTypeChoices = new[] { FilePickerFileTypes.ImagePng },
+            ShowOverwritePrompt = true,
+            SuggestedFileName = "frame.png",
+            Title = "Select where to save the frame"
+        };
+
+        return await TopLevel.GetTopLevel(this)!
+            .StorageProvider
+            .SaveFilePickerAsync(options)
+            .ConfigureAwait(false);
     }
 }

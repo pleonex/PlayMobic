@@ -29,6 +29,7 @@ public partial class AnalyzeVideoViewModel : ObservableObject
     [ObservableProperty]
     [NotifyCanExecuteChangedFor(nameof(NextFrameCommand))]
     [NotifyCanExecuteChangedFor(nameof(PreviousFrameCommand))]
+    [NotifyCanExecuteChangedFor(nameof(ExportFrameCommand))]
     private int currentFrame;
 
     [ObservableProperty]
@@ -40,6 +41,7 @@ public partial class AnalyzeVideoViewModel : ObservableObject
     public AnalyzeVideoViewModel()
     {
         SelectModsFile = new AsyncInteraction<IStorageFile?>();
+        AskFrameOutputPath = new AsyncInteraction<IStorageFile?>();
 
         ModsFilePath = string.Empty;
         videoInfo = new Dictionary<string, VideoInfoField> {
@@ -56,11 +58,13 @@ public partial class AnalyzeVideoViewModel : ObservableObject
             { "Frequency", new VideoInfoField("Frequency", "Audio") },
         };
 
-        currentFrame = 0;
+        currentFrame = -1;
         currentTime = TimeSpan.Zero.ToString("g");
     }
 
     public AsyncInteraction<IStorageFile?> SelectModsFile { get; }
+
+    public AsyncInteraction<IStorageFile?> AskFrameOutputPath { get; }
 
     public IReadOnlyCollection<VideoInfoField> VideoInfo => videoInfo.Values;
 
@@ -79,6 +83,7 @@ public partial class AnalyzeVideoViewModel : ObservableObject
             ModsFilePath = path;
             FramesCount = decoder.VideoInfo.FramesCount;
             UpdateVideoInfo();
+            CurrentFrame = -1;
             CurrentFrame = 0;
         });
     }
@@ -113,6 +118,23 @@ public partial class AnalyzeVideoViewModel : ObservableObject
         return CurrentFrame > 0;
     }
 
+    [RelayCommand(CanExecute = nameof(CanExportFrame))]
+    private async Task ExportFrameAsync()
+    {
+        IStorageFile? outputFile = await AskFrameOutputPath.HandleAsync().ConfigureAwait(false);
+        string? outputPath = outputFile?.TryGetLocalPath();
+        if (outputPath is null) {
+            return;
+        }
+
+        decoder!.FrameImage!.Save(outputPath);
+    }
+
+    private bool CanExportFrame()
+    {
+        return decoder?.FrameImage is not null;
+    }
+
     private void UpdateVideoInfo()
     {
         if (decoder is null) {
@@ -135,7 +157,7 @@ public partial class AnalyzeVideoViewModel : ObservableObject
 
     partial void OnCurrentFrameChanged(int oldValue, int newValue)
     {
-        if (oldValue == newValue || decoder is null) {
+        if (oldValue == newValue || decoder is null || CurrentFrame < 0 || CurrentFrame >= FramesCount) {
             return;
         }
 
