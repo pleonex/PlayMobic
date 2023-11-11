@@ -3,6 +3,7 @@
 using System;
 using System.Collections.Generic;
 using System.IO;
+using System.Threading;
 using System.Threading.Tasks;
 using Avalonia.Media.Imaging;
 using Avalonia.Platform.Storage;
@@ -16,6 +17,8 @@ using PlayMobic.UI.Mvvm;
 public partial class AnalyzeVideoViewModel : ObservableObject
 {
     private readonly Dictionary<string, VideoInfoField> videoInfo;
+    private readonly object decodingSync = new object();
+    private CancellationTokenSource? previousDecodingCancellation;
     private VideoFrameDecoder? decoder;
 
     [ObservableProperty]
@@ -37,6 +40,9 @@ public partial class AnalyzeVideoViewModel : ObservableObject
 
     [ObservableProperty]
     private Bitmap? currentFrameImage;
+
+    [ObservableProperty]
+    private bool isFrameLoading;
 
     public AnalyzeVideoViewModel()
     {
@@ -163,13 +169,27 @@ public partial class AnalyzeVideoViewModel : ObservableObject
 
         var time = TimeSpan.FromSeconds(CurrentFrame / decoder.VideoInfo.FramesPerSecond);
         CurrentTime = $"{time:g}";
+        CurrentFrameImage = null;
+        IsFrameLoading = true;
 
-        if (newValue == oldValue + 1) {
-            decoder.DecodeNextFrame();
-        } else {
-            decoder.DecodeFrame(newValue);
-        }
+        previousDecodingCancellation?.Cancel();
+        previousDecodingCancellation = new CancellationTokenSource();
+        var currentToken = previousDecodingCancellation.Token;
 
-        CurrentFrameImage = decoder.FrameImage;
+        Task.Run(() => {
+            lock (decodingSync) {
+                currentToken.ThrowIfCancellationRequested();
+                if (newValue == oldValue + 1) {
+                    decoder.DecodeNextFrame();
+                } else {
+                    decoder.DecodeFrame(newValue);
+                }
+
+                Dispatcher.UIThread.Post(() => {
+                    IsFrameLoading = false;
+                    CurrentFrameImage = decoder.FrameImage;
+                });
+            }
+        }, previousDecodingCancellation.Token);
     }
 }

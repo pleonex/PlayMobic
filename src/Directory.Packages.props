@@ -4,6 +4,7 @@
     <PackageVersion Include="Avalonia" Version="11.0.5" />
     <PackageVersion Include="Avalonia.Controls.DataGrid" Version="11.0.5" />
     <PackageVersion Include="Avalonia.Desktop" Version="11.0.5" />
+    <PackageVersion Include="Deadpikle.AvaloniaProgressRing" Version="0.10.3" />
     <PackageVersion Include="FluentAvaloniaUI" Version="2.0.4" />
     <PackageVersion Include="Avalonia.Fonts.Inter" Version="11.0.5" />
     <PackageVersion Include="Avalonia.Diagnostics" Version="11.0.5" />

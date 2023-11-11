@@ -23,6 +23,7 @@
     <PackageReference Include="Avalonia" />
     <PackageReference Include="Avalonia.Controls.DataGrid" />
     <PackageReference Include="Avalonia.Desktop" />
+    <PackageReference Include="Deadpikle.AvaloniaProgressRing" />
     <PackageReference Include="FluentAvaloniaUI" />
     <PackageReference Include="Avalonia.Fonts.Inter" />
     <PackageReference Condition="'$(Configuration)' == 'Debug'" Include="Avalonia.Diagnostics" />

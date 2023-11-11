@@ -4,6 +4,7 @@
              xmlns:mc="http://schemas.openxmlformats.org/markup-compatibility/2006"
              xmlns:fluent="using:FluentAvalonia.UI.Controls"
              xmlns:local="using:PlayMobic.UI.Pages"
+             xmlns:progRing="clr-namespace:AvaloniaProgressRing;assembly=AvaloniaProgressRing"
              mc:Ignorable="d" d:DesignWidth="800" d:DesignHeight="700"
              x:Class="PlayMobic.UI.Pages.AnalyzeVideoView"
              x:DataType="local:AnalyzeVideoViewModel">
@@ -37,6 +38,13 @@
         HorizontalAlignment="Center">
         <Image MinHeight="192" MinWidth="256" Stretch="None" Source="{Binding CurrentFrameImage}" />
       </Border>
+      <progRing:ProgressRing
+        Width="80"
+        Height="80"
+        IsActive="{Binding IsFrameLoading}"
+        HorizontalAlignment="Center"
+        VerticalAlignment="Center"
+        Foreground="Green" />
       <Button
         Margin="10"
         HorizontalAlignment="Right"
