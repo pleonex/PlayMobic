@@ -2,6 +2,7 @@
 
 using System;
 using System.IO;
+using System.Linq;
 using System.Threading.Tasks;
 using Avalonia;
 using Avalonia.Platform;
@@ -36,7 +37,7 @@ public partial class SettingsViewModel : ObservableObject
     {
         AvailableThemes = Enum.GetValues<ApplicationThemes>();
         currentTheme = ApplicationThemes.System;
-        themeManager = Application.Current?.Styles[0] as FluentAvaloniaTheme
+        themeManager = Application.Current?.Styles.OfType<FluentAvaloniaTheme>().FirstOrDefault()
             ?? throw new InvalidOperationException("Cannot get theme manager");
 
         ApplicationVersion = typeof(Program).Assembly.GetName().Version?.ToString();
