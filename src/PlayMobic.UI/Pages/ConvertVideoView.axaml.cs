@@ -65,7 +65,7 @@ public partial class ConvertVideoView : UserControl
     {
         if (e.HasError) {
             Dispatcher.UIThread.Post(() => 
-                convertingDialog.Content = e.FilePath + Environment.NewLine + e.ErrorDescription);
+                convertingDialog.Content = e.FilePath + Environment.NewLine + "Error: " + e.ErrorDescription);
             convertingDialog.SetProgressBarState(e.Progress, TaskDialogProgressState.Error);
         } else {
             Dispatcher.UIThread.Post(() => convertingDialog.Content = e.FilePath);

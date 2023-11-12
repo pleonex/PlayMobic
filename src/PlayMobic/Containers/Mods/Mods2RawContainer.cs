@@ -49,7 +49,7 @@ public class Mods2RawContainer : IConverter<ModsVideo, NodeContainerFormat>
         var videoDecoder = new MobiclipDecoder(info.Width, info.Height, isStereo: false);
         var audioDecoders = new IAudioDecoder[info.AudioChannelsCount];
         for (int i = 0; i < audioDecoders.Length; i++) {
-            audioDecoders[i] = CreateAudioDecoder(info.AudioCodec);
+            audioDecoders[i] = CreateAudioDecoder(video, i);
         }
 
         var colorConvertedFrame = new FrameYuv420(info.Width, info.Height);
@@ -79,9 +79,19 @@ public class Mods2RawContainer : IConverter<ModsVideo, NodeContainerFormat>
         }
     }
 
-    private static IAudioDecoder CreateAudioDecoder(AudioCodecKind codecKind)
+    private static IAudioDecoder CreateAudioDecoder(ModsVideo video, int channelIdx)
     {
-        return codecKind switch {
+        Stream? codebook = null;
+        if (video.Info.AudioCodec is AudioCodecKind.FastAudioCodebook) {
+            if (channelIdx >= video.AudioCodebook.Length) {
+                throw new InvalidOperationException("Codebook is missing for channel");
+            }
+
+            codebook = video.AudioCodebook[channelIdx];
+        }
+
+        return video.Info.AudioCodec switch {
+            AudioCodecKind.FastAudioCodebook => new FastAudioCodebookDecoder(codebook!),
             AudioCodecKind.ImaAdPcm => new ImaAdpcmDecoder(),
             AudioCodecKind.RawPcm16 => new RawPcm16Decoder(),
             _ => throw new NotImplementedException("Unsupported audio codec"),
