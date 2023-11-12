@@ -10,6 +10,10 @@ using Yarhl.IO;
 
 public class Mods2BinaryAvi : IConverter<ModsVideo, BinaryFormat>
 {
+    private const int MaxBlocksPerFrame = 0x3FFF + 1;
+    private const int DecodedBlockSize = 0x200; // 256 samples * 16-bits
+    private const int MaxBlockPerChannelSize = MaxBlocksPerFrame * DecodedBlockSize;
+
     private readonly Stream output;
 
     public Mods2BinaryAvi(Stream output)
@@ -48,8 +52,11 @@ public class Mods2BinaryAvi : IConverter<ModsVideo, BinaryFormat>
         }
 
         byte[] rgbFrame = new byte[info.Width * info.Height * 4];
+
+        // This is allocating a huge buffer (16 MB) for the interleaved buffer but I can't figure out
+        // a better way as the AVI API only accepts byte[] as input, so it's that or create a buffer each time.
         using var audioBlocksBuffer = new DataStream();
-        byte[] audioInterleaveBuffer = new byte[info.AudioChannelsCount * 6000];
+        byte[] audioInterleaveBuffer = new byte[info.AudioChannelsCount * MaxBlockPerChannelSize];
         int audioBlockLength = 0;
 
         var demuxer = new ModsDemuxer(video);
@@ -98,6 +105,7 @@ public class Mods2BinaryAvi : IConverter<ModsVideo, BinaryFormat>
 
         return video.Info.AudioCodec switch {
             AudioCodecKind.FastAudioCodebook => new FastAudioCodebookDecoder(codebook!),
+            AudioCodecKind.FastAudioEnhanced => new FastAudioEnhancedDecoder(),
             AudioCodecKind.ImaAdPcm => new ImaAdpcmDecoder(),
             AudioCodecKind.RawPcm16 => new RawPcm16Decoder(),
             _ => throw new NotImplementedException("Unsupported audio codec"),

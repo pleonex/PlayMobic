@@ -7,5 +7,5 @@ public enum AudioCodecKind
     FastAudioEnhanced,
     ImaAdPcm,
     RawPcm16,
-    DspAdPcm,
+    DspAdPcm, // also known as GC-ADPCM
 }

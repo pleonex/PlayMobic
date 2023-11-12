@@ -9,6 +9,7 @@ the following resources to get you started.
   - [High level non-tech introduction to H.264](https://www.youtube.com/watch?v=PmoEsPWEdOA)
   - Decoder components:
     [demuxer](<https://en.wikipedia.org/wiki/Demultiplexer_(media_file)>)
+  - [NihAV architecture](https://nihav.org/overview.html)
   - ffmpeg API docs describing its architecture and concepts:
     [doxygen docs](http://ffmpeg.org/doxygen/trunk/group__libavf.html)
 - Learning of referenced codec H.264
