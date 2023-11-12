@@ -3,9 +3,9 @@
 public enum AudioCodecKind
 {
     None,
-    SxLpc, // TBC
-    DspAdPcm,
-    FastAudio,
+    FastAudioCodebook,
+    FastAudioEnhanced,
     ImaAdPcm,
     RawPcm16,
+    DspAdPcm,
 }

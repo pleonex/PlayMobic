@@ -89,6 +89,7 @@ public class Mods2BinaryAvi : IConverter<ModsVideo, BinaryFormat>
     {
         return codecKind switch {
             AudioCodecKind.ImaAdPcm => new ImaAdpcmDecoder(),
+            AudioCodecKind.RawPcm16 => new RawPcm16Decoder(),
             _ => throw new NotImplementedException("Unsupported audio codec"),
         };
     }

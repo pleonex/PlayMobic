@@ -121,8 +121,8 @@ public class Binary2Mods : IConverter<IBinary, ModsVideo>
     private static AudioCodecKind GetAudioCodec(int id) =>
         id switch {
             0 => AudioCodecKind.None,
-            1 => AudioCodecKind.SxLpc,
-            2 => AudioCodecKind.FastAudio,
+            1 => AudioCodecKind.FastAudioCodebook,
+            2 => AudioCodecKind.FastAudioEnhanced,
             3 => AudioCodecKind.ImaAdPcm,
             4 => AudioCodecKind.RawPcm16,
             _ => throw new NotSupportedException("Unsupported audio codec"),

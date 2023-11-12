@@ -83,6 +83,7 @@ public class Mods2RawContainer : IConverter<ModsVideo, NodeContainerFormat>
     {
         return codecKind switch {
             AudioCodecKind.ImaAdPcm => new ImaAdpcmDecoder(),
+            AudioCodecKind.RawPcm16 => new RawPcm16Decoder(),
             _ => throw new NotImplementedException("Unsupported audio codec"),
         };
     }

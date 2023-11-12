@@ -51,13 +51,13 @@ The video codec ID must be `0x0A` for the Mobiclip variant of NDS.
 The audio codec ID can be:
 
 - 0: No audio
-- 1: LPC variant
-- 2: FastAudio
-- 3: IMA-ADPCM: 4-bits samples with a header of 32-bits (index + last sample)
-  per key frame
+- 1: Original FastAudio (v0) with codebook
+- 2: Enhanced FastAudio (v1)
+- 3: IMA-ADPCM
 - 4: Raw PCM-16
 
-The video codec is the same always.
+The video codec is the same always. It's an improvement over VXDS video codec.
+Its binary serialization is closer to H.264 with the JPEG entropy bit encoding.
 
 #### Parameters
 
@@ -96,13 +96,13 @@ processing.
 The container data is a set of _frame packets_. Each packet contains data to
 decode one video frame and audio data for each channel.
 
-| Offset | Type     | Description                                   |
-| ------ | -------- | --------------------------------------------- |
-| 0x00   | uint     | Packet info                                   |
-| 0x04   | byte[]   | Video frame data                              |
-| ...    | uint     | (only N3 containers and I/key frames) Unknown |
-| ....   | byte[][] | Blocks of audio data                          |
-| ....   | byte[]   | 0 padding to 32-bits address                  |
+| Offset | Type     | Description                                       |
+| ------ | -------- | ------------------------------------------------- |
+| 0x00   | uint     | Packet info                                       |
+| 0x04   | byte[]   | Video frame data                                  |
+| ...    | uint     | (only N3 containers and I/key frames) Unknown     |
+| ....   | byte[][] | Blocks of audio data per channel with 256 samples |
+| ....   | byte[]   | 0 padding to 32-bits address                      |
 
 The packet info contains information about this frame packet:
 
@@ -124,7 +124,8 @@ channels video there will be first a block for channel 0, then a block for
 channel 1, then a block for channel 0 again, repeating until reading all the
 blocks for each channel.
 
-The size of the audio blocks is fixed for some encoders:
+The size of the audio blocks is fixed for some encoders. But all of them results
+in 256 decoded samples in signed PCM-16 format:
 
 - FastAudio: 0x28 bytes.
 - IMA-AD PCM: 0x84 if it's a key frame, 0x80 bytes otherwise.
