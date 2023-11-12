@@ -1,22 +1,76 @@
 # PlayMobic
 
-_Documentation, library and tool to analyze and decode MODS video files._
+<!-- markdownlint-disable MD033 -->
+<p align="center">
+<!--
+  <a href="https://dev.azure.com/SceneGate/SceneGate/_packaging?_a=feed&feed=SceneGate-Preview">
+    <img alt="Stable version" src="https://img.shields.io/nuget/v/PleoSoft.PlayMobic?label=Stable" />
+  </a>
+  &nbsp;
+-->
+  <a href="https://dev.azure.com/SceneGate/SceneGate/_packaging?_a=feed&feed=SceneGate-Preview">
+    <img alt="GitHub commits since latest release (by SemVer)" src="https://img.shields.io/github/commits-since/pleonex/PlayMobic/latest?sort=semver" />
+  </a>
+  &nbsp;
+  <a href="https://github.com/pleonex/PlayMobic/actions/workflows/build-and-release.yml">
+    <img alt="Build and release" src="https://github.com/pleonex/PlayMobic/actions/workflows/build-and-release.yml/badge.svg" />
+  </a>
+  &nbsp;
+  <a href="https://choosealicense.com/licenses/mit/">
+    <img alt="MIT License" src="https://img.shields.io/badge/license-MIT-blue.svg?style=flat" />
+  </a>
+  &nbsp;
+</p>
 
-> [!IMPORTANT]  
-> This project **only supports the MODS format (NDS)**. Related formats such us
-> Moflex or MO for GBA, 3DS or Wii are out of scope of this project. Please do
-> **not** open issues or pull request for them.
+Documentation, library and tools to analyze and **decode MODS video files**.
 
-## Features
-
-- 📃 Documentation of the video format.
-  - [MODS container](docs/articles/specs/container-MODS.md)
-  - [Mobiclip codec](docs/articles/specs/codec-mobiclip.md)
-- 📚 .NET library that supports the video format:
+- 📃 Documentation of the formats
+- 📚 .NET library that supports the video and audio format:
   - Deserialization of the MODS container
   - MODS demuxer
-- 🔧 Tool to perform some operations on files
-  - Display codec information of the MODS container
+  - Mobiclip video decoder
+  - IMA-AD PCM audio decoder
+  - FastAudio v2 audio decoder
+- 🔧 Command-line tool to show, demux and convert to AVI files
+- 📺 Application to convert files to MP4, AVI or raw streams
+
+> [!IMPORTANT]  
+> This project **only supports the MODS format (NDS)**. Similar formats like
+> VXDS, Moflex or MO are out of scope of this project (at the moment at least).
+> Please do **not** open issues or pull request for them.
+
+## Installation
+
+- The applications will be available to download from the
+  [GitHub release page](https://github.com/pleonex/PlayMobic/releases).
+- The .NET library is available in the
+  [SceneGate AzureDevOps feed](https://dev.azure.com/SceneGate/SceneGate/_artifacts/feed/SceneGate-Preview).
+
+## Get started
+
+Check out the [documentation site](https://www.pleonex.dev/PlayMobic/).
+
+Feel free to ask any question in the
+[project discussions](https://github.com/pleonex/PlayMobic/discussions).
+
+## Build
+
+The project requires
+[.NET 6.0 SDK](https://dotnet.microsoft.com/en-us/download/dotnet/6.0).
+
+To build, test and generate artifacts run:
+
+```sh
+dotnet tool restore
+dotnet script build.csx --isolated-load-context -- --target=CI-Build
+```
+
+For a quick build use the `Default` target or skip the `target` argument.
+
+## Release
+
+Create a new GitHub release with a tag `v{Version}` (e.g. `v2.4`) and that's it!
+This triggers a pipeline that builds and deploy the project.
 
 ## Credits
 
@@ -27,20 +81,3 @@ implementation work of the following projects:
 
 - Gericom: [MobiclipDecoder](https://github.com/Gericom/MobiclipDecoder).
 - Adib Surani: [Mobius](https://github.com/AdibSurani/Mobius).
-
-## Roadmap
-
-- [x] Document container format
-- [x] Implement container format and demuxer
-- [ ] Document video codec ([#1](https://github.com/pleonex/PlayMobic/issues/1))
-- [ ] Implement video decoder
-      ([#2](https://github.com/pleonex/PlayMobic/issues/2))
-- [ ] Implement audio decoders
-      ([#4](https://github.com/pleonex/PlayMobic/issues/4))
-  - [ ] IMA-ADPCM
-  - [ ] DSP-ADPCM
-  - [ ] FastAudio
-  - [ ] Raw PCM16
-- [ ] Implement IMA-ADPCM audio encoder
-- [ ] Implement video encoder
-      ([#3](https://github.com/pleonex/PlayMobic/issues/3)) 😮 😕
