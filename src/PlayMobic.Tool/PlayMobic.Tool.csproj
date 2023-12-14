@@ -2,7 +2,6 @@
 
   <PropertyGroup>
     <OutputType>Exe</OutputType>
-    <IsPublishable>true</IsPublishable>
 
     <TargetFramework>net6.0</TargetFramework>
     <SelfContained>false</SelfContained>

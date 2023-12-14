@@ -7,17 +7,14 @@
 
     <ManagePackageVersionsCentrally>true</ManagePackageVersionsCentrally>
 
-    <!-- By default no project generates libs (pack nuget) or apps (publish).
-         Enable one option per project.
-         This allow to publish/pack at the solution level so
-         the platform info is kept. -->
+    <!-- By default no project generates libs (pack nuget). Enable it per project.
+         This allow to pack at the solution level so the platform info is kept. -->
     <IsPackable>false</IsPackable>
-    <IsPublishable>false</IsPublishable>
   </PropertyGroup>
 
   <PropertyGroup>
     <PackageLicenseExpression>MIT</PackageLicenseExpression>
-    <PackageProjectUrl>https://github.com/pleonex/PlayMobic</PackageProjectUrl>
+    <PackageProjectUrl>https://www.pleonex.dev/PlayMobic/</PackageProjectUrl>
     <RepositoryUrl>https://github.com/pleonex/PlayMobic</RepositoryUrl>
     <!-- <PackageIcon>icon.png</PackageIcon> -->
     <PackageTags>nds;mobiclip;video;codec;</PackageTags>
@@ -57,8 +54,5 @@
   </PropertyGroup>
   <ItemGroup>
     <PackageReference Include="SonarAnalyzer.CSharp" PrivateAssets="All"/>
-    <PackageReference Include="Roslynator.Analyzers" PrivateAssets="All"/>
-    <!-- Too many bugs with recent C# versions -->
-    <!--<PackageReference Include="StyleCop.Analyzers" PrivateAssets="All"/>-->
   </ItemGroup>
 </Project>

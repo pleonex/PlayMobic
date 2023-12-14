@@ -9,7 +9,7 @@
     <!-- TODO: document API -->
     <GenerateDocumentationFile>false</GenerateDocumentationFile>
     <NoWarn>SA1600;SA1602</NoWarn>
-    
+
     <ImplicitUsings>enable</ImplicitUsings>
     <Nullable>enable</Nullable>
   </PropertyGroup>

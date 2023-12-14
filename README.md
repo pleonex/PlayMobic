@@ -62,10 +62,11 @@ To build, test and generate artifacts run:
 
 ```sh
 dotnet tool restore
-dotnet script build.csx --isolated-load-context -- --target=CI-Build
+dotnet script build.csx --isolated-load-context -- --target=Default
 ```
 
-For a quick build use the `Default` target or skip the `target` argument.
+To build and run the tests uses the `Default` target or skip the `target`
+argument. To create distributable bundles run the target `Bundle`.
 
 ## Release
 
