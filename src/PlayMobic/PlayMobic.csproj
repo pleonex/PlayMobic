@@ -4,7 +4,7 @@
     <Description>Codec for MODS video format.</Description>
     <IsPackable>true</IsPackable>
 
-    <TargetFramework>net6.0</TargetFramework>
+    <TargetFramework>net8.0</TargetFramework>
 
     <!-- TODO: document API -->
     <GenerateDocumentationFile>false</GenerateDocumentationFile>

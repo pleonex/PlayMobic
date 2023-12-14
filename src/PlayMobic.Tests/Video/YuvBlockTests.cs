@@ -16,9 +16,11 @@ internal class YuvBlockTests
         var macroblock = new YuvBlock(expectedY, expectedU, expectedV);
 
         Assert.Multiple(() => {
-            Assert.That(macroblock.Luma, Is.EqualTo(expectedY));
-            Assert.That(macroblock.ChromaU, Is.EqualTo(expectedU));
-            Assert.That(macroblock.ChromaV, Is.EqualTo(expectedV));
+#pragma warning disable NUnit2010 // Bug in NUnit with Is.EqualTo
+            Assert.That(macroblock.Luma.Equals(expectedY), Is.True);
+            Assert.That(macroblock.ChromaU.Equals(expectedU), Is.True);
+            Assert.That(macroblock.ChromaV.Equals(expectedV), Is.True);
+#pragma warning restore NUnit2010
         });
     }
 }
