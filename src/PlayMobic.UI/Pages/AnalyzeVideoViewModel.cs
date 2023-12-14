@@ -173,6 +173,7 @@ public partial class AnalyzeVideoViewModel : ObservableObject
         IsFrameLoading = true;
 
         previousDecodingCancellation?.Cancel();
+        previousDecodingCancellation?.Dispose();
         previousDecodingCancellation = new CancellationTokenSource();
         var currentToken = previousDecodingCancellation.Token;
 

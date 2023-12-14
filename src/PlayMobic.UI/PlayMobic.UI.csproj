@@ -1,6 +1,7 @@
 ﻿<Project Sdk="Microsoft.NET.Sdk">
   <PropertyGroup>
     <OutputType>WinExe</OutputType>
+    <ApplicationIcon>Assets/avalonia-logo.ico</ApplicationIcon>
 
     <TargetFramework>net6.0</TargetFramework>
     <SelfContained>false</SelfContained>
@@ -17,7 +18,6 @@
     <AvaloniaResource Include="../../LICENSE" Link="Assets\LICENSE" />
   </ItemGroup>
 
-
   <ItemGroup>
     <PackageReference Include="Avalonia" />
     <PackageReference Include="Avalonia.Controls.DataGrid" />
@@ -30,15 +30,7 @@
     <PackageReference Include="Texim" />
   </ItemGroup>
 
-
   <ItemGroup>
     <ProjectReference Include="..\PlayMobic\PlayMobic.csproj" />
-  </ItemGroup>
-
-
-  <ItemGroup>
-    <Compile Update="Pages\SettingsView.axaml.cs">
-      <DependentUpon>SettingsView.axaml</DependentUpon>
-    </Compile>
   </ItemGroup>
 </Project>

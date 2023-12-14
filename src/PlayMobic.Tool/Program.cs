@@ -145,10 +145,21 @@ void Mods2Avi(FileInfo videoFile, string outputPath)
     Console.WriteLine("Decoding MODS video into an AVI file...");
     var watch = Stopwatch.StartNew();
 
-    using DataStream outputStream = DataStreamFactory.FromFile(outputPath, FileOpenMode.Write);
     using Node videoNode = NodeFactory.FromFile(videoFile.FullName, FileOpenMode.Read)
-        .TransformWith<Binary2Mods>()
-        .TransformWith(new Mods2BinaryAvi(outputStream));
+        .TransformWith<Binary2Mods>();
+
+    int totalFrames = videoNode.GetFormatAs<ModsVideo>()!.Info.FramesCount;
+    int frame5Percentage = 5 * totalFrames / 100;
+
+    using DataStream outputStream = DataStreamFactory.FromFile(outputPath, FileOpenMode.Write);
+    var mods2Avi = new Mods2BinaryAvi(outputStream);
+    mods2Avi.ProgressUpdate += (_, e) => {
+        if ((e % frame5Percentage) == 0) {
+            Console.Write("\rDecoding... {0} / {1} ({2:P2})", e, totalFrames, (double)e / totalFrames);
+        }
+    };
+
+    videoNode.TransformWith(mods2Avi);
 
     watch.Stop();
     Console.WriteLine("Done in {0}", watch.Elapsed);

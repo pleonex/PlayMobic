@@ -30,7 +30,7 @@
             RenderOptions.BitmapInterpolationMode="HighQuality" />
 
           <TextBlock Grid.Row="0" Grid.Column="1" Text="PlayMobic" Theme="{StaticResource TitleTextBlockStyle}" />
-          <TextBlock Grid.Row="1" Grid.Column="1" Text="1.0.0.0" Theme="{StaticResource BodyTextBlockStyle}" />
+          <TextBlock Grid.Row="1" Grid.Column="1" Text="{Binding ApplicationVersion}" Theme="{StaticResource BodyTextBlockStyle}" />
           <TextBlock Grid.Row="2" Grid.Column="1" Text="MIT License" Theme="{StaticResource CaptionTextBlockStyle}" />
 
           <fluent:HyperlinkButton

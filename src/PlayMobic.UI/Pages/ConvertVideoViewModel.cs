@@ -195,6 +195,9 @@ public partial class ConvertVideoViewModel : ObservableObject
         if (success) {
             ConversionProgressed?.Invoke(this, new ConversionProgressEventArgs("Completed!", 100, true));
         }
+
+        convertCancellation.Dispose();
+        convertCancellation = null;
     }
 
     private bool ConvertFile(int fileIndex, CancellationToken token)

@@ -1,7 +1,7 @@
 ﻿namespace PlayMobic.UI;
+
 using System;
 using Avalonia.Controls;
-using FluentAvalonia.Core;
 using FluentAvalonia.UI.Controls;
 using PlayMobic.UI.Pages;
 
@@ -12,7 +12,7 @@ public partial class MainView : UserControl
         InitializeComponent();
 
         mainNavigationView.SelectionChanged += OnMainNavigationItemChange;
-        mainNavigationView.SelectedItem = mainNavigationView.MenuItems.ElementAt(0);
+        mainNavigationView.SelectedItem = mainNavigationView.MenuItems[0];
     }
 
     private void OnMainNavigationItemChange(object? sender, NavigationViewSelectionChangedEventArgs e)
